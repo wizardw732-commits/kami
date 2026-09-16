@@ -281,6 +281,29 @@
   .noteCheck.on{background:var(--gold);border-color:var(--gold);}
   .emptyHint{color:var(--text-muted);font-size:13px;padding:6px 2px;}
 
+  .weekRow{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    padding-bottom:4px;
+  }
+  .dayCard{
+    flex:0 0 auto;
+    width:78px;
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:12px 8px;
+    text-align:center;
+  }
+  .dayCard .dayLabel{font-size:12.5px;color:var(--text-muted);margin-bottom:8px;}
+  .dayCard svg{display:block;margin:0 auto;}
+  .dayCard .dayPct{
+    font-size:13px;
+    font-weight:800;
+    margin-top:8px;
+  }
+
   footer{
     text-align:center;
     color:var(--text-muted);
@@ -327,6 +350,10 @@
 
     <section>
       <div class="sectionTitle">العادات اليومية</div>
+      <div class="addBox">
+        <input id="habitNameInput" type="text" placeholder="اكتب اسم عادة جديدة" />
+        <button class="btn btn-mini" onclick="addHabit()">إضافة عادة</button>
+      </div>
       <div class="habitsWrap">
         <table id="habitsTable">
           <thead>
@@ -338,6 +365,11 @@
           <tbody id="habitsBody"></tbody>
         </table>
       </div>
+    </section>
+
+    <section>
+      <div class="sectionTitle">نظرة أسبوعية</div>
+      <div class="weekRow" id="weekRow"></div>
     </section>
 
     <section>
@@ -398,76 +430,88 @@
 
 <script>
 /* =====================================================================
-   إعدادات الاتصال بسيرفر التراخيص (Google Apps Script Web App)
-   بدّل الرابط تحت برابط الـ /exec اللي تحصل عليه بعد نشر 1_Server_Code.gs
+   نظام الأكواد (يشتغل بالكامل محليًا داخل الموقع - بدون أي سيرفر خارجي)
    ===================================================================== */
-const SERVER_URL = "https://script.google.com/macros/s/AKfycbwnMcNbrGW1Y2ZzB4Ymf61nR283X9zrGj-4EiWNcYAk1OJLgHFDDfw1zYK5zxFxAOqw/exec";
+const ADMIN_CODE = "ADMIN-KAMI-2026";   // كود دائم خاص فيك انته بس
+const ADMIN_DAYS = 3650;
 
-function getDeviceId(){
-  let id = localStorage.getItem("kami_device_id");
-  if(!id){
-    id = crypto.randomUUID();
-    localStorage.setItem("kami_device_id", id);
+const TRIAL_CODE = "TRY-KAMI-7";        // كود تجربة عام، أسبوع لكل جهاز
+const TRIAL_DAYS = 7;
+
+const PAID_DAYS = 30; // مدة صلاحية أي كود مدفوع
+
+// مخزون الأكواد المدفوعة - كل كود يستخدم لزبون وحد بس
+// لما تعطي كود لزبون: احذفه من هذي القائمة وارفع نسخة جديدة من الملف
+// حتى ما يتكرر استخدامه. لما يخلص المخزون، ضيف أكواد جديدة بنفس الشكل.
+const PAID_CODES = [
+  "PAID-7F3K2Q",
+  "PAID-9XZ4M1",
+  "PAID-B2N8R5",
+  "PAID-K6T1W9",
+  "PAID-L4P7C3",
+  "PAID-Q9M2X6",
+  "PAID-R5H8J1",
+  "PAID-S3D7Y4",
+  "PAID-T8V2Z6",
+  "PAID-U1G5K9",
+  "PAID-V7N3M2",
+  "PAID-W4Q8L1",
+  "PAID-X2R6P5",
+  "PAID-Y9S1T7",
+  "PAID-Z5U4V8",
+  "PAID-A3B7C1",
+  "PAID-D6E2F9",
+  "PAID-G1H5I4",
+  "PAID-J8K3L6",
+  "PAID-M2N9O7"
+];
+
+function futureDate(days){
+  return new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+}
+
+function activateLocal(rawCode){
+  const code = rawCode.trim().toUpperCase();
+
+  if(code === ADMIN_CODE){
+    return { ok:true, type:"admin", expiry: futureDate(ADMIN_DAYS).toISOString() };
   }
-  return id;
-}
 
-let jsonpCounter = 0;
-function callServer(payload){
-  return new Promise((resolve) => {
-    const cbName = "kamiCb_" + (jsonpCounter++) + "_" + Date.now();
-    const params = new URLSearchParams({ ...payload, callback: cbName }).toString();
-
-    const timeout = setTimeout(() => {
-      cleanup();
-      resolve({ ok:false, message:"تعذر الاتصال بالسيرفر (استغرق وقت طويل)" });
-    }, 25000);
-
-    function cleanup(){
-      clearTimeout(timeout);
-      delete window[cbName];
-      if(script.parentNode) script.parentNode.removeChild(script);
+  if(code === TRIAL_CODE){
+    const usedTrial = localStorage.getItem("kami_trial_expiry");
+    if(usedTrial){
+      const prevExpiry = new Date(usedTrial);
+      if(prevExpiry.getTime() > Date.now()){
+        return { ok:true, type:"trial", expiry: prevExpiry.toISOString() };
+      }
+      return { ok:false, message:"خلصت فترة التجربة على هذا الجهاز. تواصل للدفع." };
     }
+    const expiry = futureDate(TRIAL_DAYS);
+    localStorage.setItem("kami_trial_expiry", expiry.toISOString());
+    return { ok:true, type:"trial", expiry: expiry.toISOString() };
+  }
 
-    window[cbName] = function(data){
-      cleanup();
-      resolve(data);
-    };
+  if(PAID_CODES.includes(code)){
+    const expiry = futureDate(PAID_DAYS);
+    return { ok:true, type:"paid", expiry: expiry.toISOString() };
+  }
 
-    const script = document.createElement("script");
-    script.src = SERVER_URL + "?" + params;
-    script.onerror = function(){
-      cleanup();
-      resolve({ ok:false, message:"تعذر الاتصال بالسيرفر" });
-    };
-    document.body.appendChild(script);
-  });
+  return { ok:false, message:"الكود غير صحيح" };
 }
 
-async function checkExistingLicense(){
-  const deviceId = getDeviceId();
+function checkExistingLicense(){
   const cachedExpiry = localStorage.getItem("kami_expiry");
   if(cachedExpiry && new Date(cachedExpiry).getTime() > Date.now()){
     showDashboard(cachedExpiry);
-    return;
-  }
-  const status = await callServer({ action:"check", deviceId });
-  if(status.ok && status.active){
-    localStorage.setItem("kami_expiry", status.expiry);
-    showDashboard(status.expiry);
   }
 }
 
-async function activate(){
-  const code = document.getElementById("codeInput").value.trim();
+function activate(){
+  const codeInput = document.getElementById("codeInput").value;
   const msg = document.getElementById("lockMessage");
-  if(!code){ msg.textContent = "اكتب كود التفعيل أول."; return; }
+  if(!codeInput.trim()){ msg.textContent = "اكتب كود التفعيل أول."; return; }
 
-  msg.style.color = "var(--text-muted)";
-  msg.textContent = "جاري التحقق...";
-
-  const deviceId = getDeviceId();
-  const result = await callServer({ action:"activate", code, deviceId });
+  const result = activateLocal(codeInput);
 
   if(result.ok){
     localStorage.setItem("kami_expiry", result.expiry);
@@ -484,6 +528,7 @@ function showDashboard(expiryIso){
   const days = Math.max(0, Math.ceil((new Date(expiryIso) - Date.now()) / 86400000));
   document.getElementById("statusPill").textContent = "مفعّل — يبقى " + days + " يوم";
   renderHabits();
+  renderWeekRow();
   renderTasks();
   renderAllCategories();
   tickCountdown();
@@ -492,8 +537,8 @@ function showDashboard(expiryIso){
   requestNotifyPermission();
 }
 
-/* ---------------- بيانات تجريبية للداشبورد (غيّرها كما تحب) ---------------- */
-const HABITS = [
+/* ---------------- العادات (قابلة للإضافة، تُحفظ بمتصفح الجهاز) ---------------- */
+let HABITS = JSON.parse(localStorage.getItem("kami_habits") || "null") || [
   "بدء العمل الساعة 6 صباحًا",
   "أذكار الصباح",
   "الرد السريع على الرسائل",
@@ -501,7 +546,21 @@ const HABITS = [
   "قراءة 10 صفحات"
 ];
 const DAYS = ["س","ح","ن","ث","ر","خ","ج"];
-let habitState = {};
+let habitState = JSON.parse(localStorage.getItem("kami_habit_state") || "{}");
+
+function saveHabits(){ localStorage.setItem("kami_habits", JSON.stringify(HABITS)); }
+function saveHabitState(){ localStorage.setItem("kami_habit_state", JSON.stringify(habitState)); }
+
+function addHabit(){
+  const input = document.getElementById("habitNameInput");
+  const name = input.value.trim();
+  if(!name) return;
+  HABITS.push(name);
+  saveHabits();
+  input.value = "";
+  renderHabits();
+  renderWeekRow();
+}
 
 function renderHabits(){
   const body = document.getElementById("habitsBody");
@@ -518,7 +577,9 @@ function renderHabits(){
       box.className = "chk" + (habitState[key] ? " on" : "");
       box.onclick = () => {
         habitState[key] = !habitState[key];
+        saveHabitState();
         renderHabits();
+        renderWeekRow();
         updateHeroStats();
       };
       td.appendChild(box);
@@ -527,6 +588,41 @@ function renderHabits(){
     body.appendChild(tr);
   });
   updateHeroStats();
+}
+
+/* ---------------- نظرة أسبوعية (نسبة إنجاز كل يوم بدائرة) ---------------- */
+function ringSVG(pct, color){
+  const r = 24, c = 2 * Math.PI * r;
+  const offset = c - (pct / 100) * c;
+  return `<svg width="58" height="58" viewBox="0 0 58 58">
+    <circle cx="29" cy="29" r="${r}" fill="none" stroke="var(--line)" stroke-width="6"/>
+    <circle cx="29" cy="29" r="${r}" fill="none" stroke="${color}" stroke-width="6"
+      stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round"
+      transform="rotate(-90 29 29)"/>
+  </svg>`;
+}
+
+function renderWeekRow(){
+  const row = document.getElementById("weekRow");
+  if(!row) return;
+  row.innerHTML = "";
+  const total = HABITS.length;
+  DAYS.forEach((d, di) => {
+    let done = 0;
+    for(let hi = 0; hi < total; hi++){
+      if(habitState[hi + "_" + di]) done++;
+    }
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const color = pct >= 70 ? "var(--teal)" : (pct >= 30 ? "var(--gold)" : "var(--pink)");
+    const card = document.createElement("div");
+    card.className = "dayCard";
+    card.innerHTML = `
+      <div class="dayLabel">${d}</div>
+      ${ringSVG(pct, color)}
+      <div class="dayPct">${pct}%</div>
+    `;
+    row.appendChild(card);
+  });
 }
 
 const TASKS = [
