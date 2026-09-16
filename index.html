@@ -412,14 +412,36 @@ function getDeviceId(){
   return id;
 }
 
-async function callServer(payload){
-  try{
-    const params = new URLSearchParams(payload).toString();
-    const res = await fetch(SERVER_URL + "?" + params, { method: "GET" });
-    return await res.json();
-  }catch(err){
-    return { ok:false, message:"تعذر الاتصال بالسيرفر" };
-  }
+let jsonpCounter = 0;
+function callServer(payload){
+  return new Promise((resolve) => {
+    const cbName = "kamiCb_" + (jsonpCounter++) + "_" + Date.now();
+    const params = new URLSearchParams({ ...payload, callback: cbName }).toString();
+
+    const timeout = setTimeout(() => {
+      cleanup();
+      resolve({ ok:false, message:"تعذر الاتصال بالسيرفر (استغرق وقت طويل)" });
+    }, 10000);
+
+    function cleanup(){
+      clearTimeout(timeout);
+      delete window[cbName];
+      if(script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[cbName] = function(data){
+      cleanup();
+      resolve(data);
+    };
+
+    const script = document.createElement("script");
+    script.src = SERVER_URL + "?" + params;
+    script.onerror = function(){
+      cleanup();
+      resolve({ ok:false, message:"تعذر الاتصال بالسيرفر" });
+    };
+    document.body.appendChild(script);
+  });
 }
 
 async function checkExistingLicense(){
