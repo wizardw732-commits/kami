@@ -421,7 +421,7 @@ function callServer(payload){
     const timeout = setTimeout(() => {
       cleanup();
       resolve({ ok:false, message:"تعذر الاتصال بالسيرفر (استغرق وقت طويل)" });
-    }, 10000);
+    }, 25000);
 
     function cleanup(){
       clearTimeout(timeout);
