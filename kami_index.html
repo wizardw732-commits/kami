@@ -414,12 +414,8 @@ function getDeviceId(){
 
 async function callServer(payload){
   try{
-    const res = await fetch(SERVER_URL, {
-      method: "POST",
-      // text/plain يتجنب مشكلة CORS preflight مع Apps Script
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    });
+    const params = new URLSearchParams(payload).toString();
+    const res = await fetch(SERVER_URL + "?" + params, { method: "GET" });
     return await res.json();
   }catch(err){
     return { ok:false, message:"تعذر الاتصال بالسيرفر" };
