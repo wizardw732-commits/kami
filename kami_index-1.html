@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>☆║ Cαмι — نظّم يومك</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #17121F;
+    --bg-elevated: #211A2E;
+    --bg-card: #251E33;
+    --line: #362C48;
+    --gold: #F5B84B;
+    --teal: #34D3B8;
+    --pink: #EF6F8E;
+    --text: #F3EEE9;
+    --text-muted: #9C93AA;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Tajawal',sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- شاشة القفل ---------- */
+  #lockScreen{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:32px 24px;
+    text-align:center;
+  }
+  .brandmark{
+    font-size:40px;
+    font-weight:800;
+    letter-spacing:0;
+    margin-bottom:6px;
+  }
+  .brandmark span{color:var(--gold);}
+  .tagline{
+    color:var(--text-muted);
+    font-size:15px;
+    margin-bottom:40px;
+  }
+  .lockCard{
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:28px 22px;
+    width:100%;
+    max-width:360px;
+  }
+  .lockCard h2{
+    font-size:18px;
+    font-weight:700;
+    margin:0 0 6px;
+  }
+  .lockCard p{
+    color:var(--text-muted);
+    font-size:14px;
+    line-height:1.7;
+    margin:0 0 20px;
+  }
+  #codeInput{
+    width:100%;
+    background:var(--bg-elevated);
+    border:1px solid var(--line);
+    border-radius:12px;
+    color:var(--text);
+    font-family:'Tajawal',sans-serif;
+    font-size:16px;
+    padding:14px 16px;
+    text-align:center;
+    letter-spacing:1px;
+    margin-bottom:14px;
+  }
+  #codeInput:focus{outline:2px solid var(--gold);}
+  .btn{
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:14px 16px;
+    font-family:'Tajawal',sans-serif;
+    font-size:16px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--gold);color:#241B0A;}
+  .btn-primary:active{transform:scale(0.98);}
+  #lockMessage{
+    min-height:20px;
+    font-size:13px;
+    margin-top:12px;
+    color:var(--pink);
+  }
+  .trialHint{
+    margin-top:22px;
+    font-size:13px;
+    color:var(--text-muted);
+  }
+  .trialHint b{color:var(--teal);}
+
+  /* ---------- لوحة التحكم ---------- */
+  #dashboard{display:none;}
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:20px 20px 12px;
+  }
+  .topbar .name{font-size:22px;font-weight:800;}
+  .topbar .name span{color:var(--gold);}
+  .pill{
+    background:var(--bg-elevated);
+    border:1px solid var(--line);
+    color:var(--teal);
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:999px;
+  }
+
+  .heroRow{
+    display:flex;
+    gap:12px;
+    padding:8px 20px 20px;
+    overflow-x:auto;
+  }
+  .heroCard{
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:16px 18px;
+    min-width:140px;
+    flex:1;
+  }
+  .heroCard .num{font-size:30px;font-weight:800;line-height:1;}
+  .heroCard .label{font-size:13px;color:var(--text-muted);margin-top:6px;}
+  .heroCard.gold .num{color:var(--gold);}
+  .heroCard.teal .num{color:var(--teal);}
+
+  section{padding:8px 20px 24px;}
+  .sectionTitle{
+    font-size:16px;
+    font-weight:700;
+    margin:0 0 12px;
+  }
+
+  .habitsWrap{
+    overflow-x:auto;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:var(--bg-card);
+  }
+  table{border-collapse:collapse;width:100%;min-width:520px;}
+  th,td{padding:10px 8px;text-align:center;font-size:13px;}
+  thead th{color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--line);}
+  tbody th{
+    text-align:right;
+    font-weight:500;
+    white-space:nowrap;
+    padding-right:14px;
+    color:var(--text);
+  }
+  tbody tr:not(:last-child) td, tbody tr:not(:last-child) th{border-bottom:1px solid var(--line);}
+  .chk{
+    width:22px;height:22px;
+    border-radius:7px;
+    border:1.5px solid var(--line);
+    background:transparent;
+    cursor:pointer;
+    display:inline-block;
+  }
+  .chk.on{background:var(--teal);border-color:var(--teal);}
+
+  .taskRow{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:10px;
+  }
+  .taskRow .dot{
+    width:20px;height:20px;
+    border-radius:50%;
+    border:1.5px solid var(--line);
+    flex:0 0 auto;
+    cursor:pointer;
+  }
+  .taskRow .dot.on{background:var(--gold);border-color:var(--gold);}
+  .taskRow span{font-size:14.5px;}
+  .taskRow.done span{color:var(--text-muted);text-decoration:line-through;}
+
+  .goalCard{
+    background:linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px;
+  }
+  .goalCard .goalTitle{font-size:15px;color:var(--text-muted);margin-bottom:4px;}
+  .goalCard .goalDays{font-size:34px;font-weight:800;color:var(--pink);}
+  .goalBarTrack{height:8px;background:var(--bg-elevated);border-radius:99px;margin-top:14px;overflow:hidden;}
+  .goalBarFill{height:100%;background:var(--pink);border-radius:99px;width:38%;}
+
+  .countdown{display:flex;gap:8px;margin-top:10px;}
+  .cBlock{
+    flex:1;
+    background:var(--bg-elevated);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 4px;
+    text-align:center;
+  }
+  .cBlock span{display:block;font-size:22px;font-weight:800;color:var(--pink);}
+  .cBlock small{font-size:11px;color:var(--text-muted);}
+
+  .addBox{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .addBox input{
+    flex:1;
+    min-width:140px;
+    background:var(--bg-elevated);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--text);
+    font-family:'Tajawal',sans-serif;
+    font-size:14px;
+    padding:11px 12px;
+  }
+  .addBox input:focus{outline:2px solid var(--gold);}
+  .btn-mini{
+    background:var(--teal);
+    color:#0B2320;
+    border:none;
+    border-radius:10px;
+    padding:11px 16px;
+    font-family:'Tajawal',sans-serif;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+
+  .cardRow{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:13px 16px;
+    margin-bottom:10px;
+  }
+  .cardRow .info{flex:1;}
+  .cardRow .title{font-size:14.5px;}
+  .cardRow .meta{font-size:12px;color:var(--text-muted);margin-top:2px;}
+  .cardRow.due .meta{color:var(--pink);font-weight:700;}
+  .cardRow .del{
+    background:none;border:none;color:var(--text-muted);
+    font-size:18px;cursor:pointer;padding:4px 8px;
+  }
+  .cardRow.noteDone .title{color:var(--text-muted);text-decoration:line-through;}
+  .noteCheck{
+    width:20px;height:20px;border-radius:50%;
+    border:1.5px solid var(--line);cursor:pointer;flex:0 0 auto;
+  }
+  .noteCheck.on{background:var(--gold);border-color:var(--gold);}
+  .emptyHint{color:var(--text-muted);font-size:13px;padding:6px 2px;}
+
+  footer{
+    text-align:center;
+    color:var(--text-muted);
+    font-size:12px;
+    padding:20px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ شاشة القفل / التفعيل ============ -->
+  <div id="lockScreen">
+    <div class="brandmark">☆║ C<span>α</span>мι</div>
+    <div class="tagline">عاداتك، مهامك، وأهدافك — من مكان وحد</div>
+
+    <div class="lockCard">
+      <h2>فعّل حسابك</h2>
+      <p>أدخل كود التفعيل حتى تفتح كامي وتبدأ تنظم يومك.</p>
+      <input id="codeInput" type="text" placeholder="مثال: TRY-KAMI-7" />
+      <button class="btn btn-primary" onclick="activate()">تفعيل</button>
+      <div id="lockMessage"></div>
+    </div>
+
+    <div class="trialHint">أول مرة؟ جرب كود التجربة: <b>TRY-KAMI-7</b> — أسبوع مجانًا</div>
+  </div>
+
+  <!-- ============ لوحة التحكم ============ -->
+  <div id="dashboard">
+    <div class="topbar">
+      <div class="name">☆║ C<span>α</span>мι</div>
+      <div class="pill" id="statusPill">التجربة فعّالة</div>
+    </div>
+
+    <div class="heroRow">
+      <div class="heroCard gold">
+        <div class="num" id="habitPct">0%</div>
+        <div class="label">إنجاز عادات اليوم</div>
+      </div>
+      <div class="heroCard teal">
+        <div class="num" id="taskCount">0/0</div>
+        <div class="label">مهام اليوم</div>
+      </div>
+    </div>
+
+    <section>
+      <div class="sectionTitle">العادات اليومية</div>
+      <div class="habitsWrap">
+        <table id="habitsTable">
+          <thead>
+            <tr>
+              <th style="text-align:right;padding-right:14px;">العادة</th>
+              <th>س</th><th>ح</th><th>ن</th><th>ث</th><th>ر</th><th>خ</th><th>ج</th>
+            </tr>
+          </thead>
+          <tbody id="habitsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="sectionTitle">مهام اليوم</div>
+      <div id="tasksList"></div>
+    </section>
+
+    <section>
+      <div class="sectionTitle">هدفك الحالي</div>
+      <div class="goalCard">
+        <div class="goalTitle">تعلم مصطلحات إنكليزية جديدة</div>
+        <div class="countdown" id="countdown">
+          <div class="cBlock"><span id="cDays">--</span><small>يوم</small></div>
+          <div class="cBlock"><span id="cHours">--</span><small>ساعة</small></div>
+          <div class="cBlock"><span id="cMins">--</span><small>دقيقة</small></div>
+          <div class="cBlock"><span id="cSecs">--</span><small>ثانية</small></div>
+        </div>
+        <div class="goalBarTrack"><div class="goalBarFill"></div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sectionTitle">العبادة</div>
+      <div id="worshipList"></div>
+    </section>
+
+    <section>
+      <div class="sectionTitle">الرياضة</div>
+      <div id="sportList"></div>
+    </section>
+
+    <section>
+      <div class="sectionTitle">الدراسة</div>
+      <div id="studyList"></div>
+    </section>
+
+    <section>
+      <div class="sectionTitle">المنبّه</div>
+      <div class="addBox">
+        <input id="reminderTitle" type="text" placeholder="عنوان التذكير" />
+        <input id="reminderTime" type="datetime-local" />
+        <button class="btn btn-mini" onclick="addReminder()">إضافة تذكير</button>
+      </div>
+      <div id="remindersList"></div>
+    </section>
+
+    <section>
+      <div class="sectionTitle">ملاحظات</div>
+      <div class="addBox">
+        <input id="noteText" type="text" placeholder="مثال: طلب الزبون فلان لسا ما خلص" />
+        <button class="btn btn-mini" onclick="addNote()">إضافة ملاحظة</button>
+      </div>
+      <div id="notesList"></div>
+    </section>
+
+    <footer>☆║ Cαмι © 2026</footer>
+  </div>
+
+<script>
+/* =====================================================================
+   إعدادات الاتصال بسيرفر التراخيص (Google Apps Script Web App)
+   بدّل الرابط تحت برابط الـ /exec اللي تحصل عليه بعد نشر 1_Server_Code.gs
+   ===================================================================== */
+const SERVER_URL = "https://script.google.com/macros/s/AKfycbwnMcNbrGW1Y2ZzB4Ymf61nR283X9zrGj-4EiWNcYAk1OJLgHFDDfw1zYK5zxFxAOqw/exec";
+
+function getDeviceId(){
+  let id = localStorage.getItem("kami_device_id");
+  if(!id){
+    id = crypto.randomUUID();
+    localStorage.setItem("kami_device_id", id);
+  }
+  return id;
+}
+
+async function callServer(payload){
+  try{
+    const res = await fetch(SERVER_URL, {
+      method: "POST",
+      // text/plain يتجنب مشكلة CORS preflight مع Apps Script
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  }catch(err){
+    return { ok:false, message:"تعذر الاتصال بالسيرفر" };
+  }
+}
+
+async function checkExistingLicense(){
+  const deviceId = getDeviceId();
+  const cachedExpiry = localStorage.getItem("kami_expiry");
+  if(cachedExpiry && new Date(cachedExpiry).getTime() > Date.now()){
+    showDashboard(cachedExpiry);
+    return;
+  }
+  const status = await callServer({ action:"check", deviceId });
+  if(status.ok && status.active){
+    localStorage.setItem("kami_expiry", status.expiry);
+    showDashboard(status.expiry);
+  }
+}
+
+async function activate(){
+  const code = document.getElementById("codeInput").value.trim();
+  const msg = document.getElementById("lockMessage");
+  if(!code){ msg.textContent = "اكتب كود التفعيل أول."; return; }
+
+  msg.style.color = "var(--text-muted)";
+  msg.textContent = "جاري التحقق...";
+
+  const deviceId = getDeviceId();
+  const result = await callServer({ action:"activate", code, deviceId });
+
+  if(result.ok){
+    localStorage.setItem("kami_expiry", result.expiry);
+    showDashboard(result.expiry);
+  }else{
+    msg.style.color = "var(--pink)";
+    msg.textContent = result.message || "كود غير صحيح";
+  }
+}
+
+function showDashboard(expiryIso){
+  document.getElementById("lockScreen").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+  const days = Math.max(0, Math.ceil((new Date(expiryIso) - Date.now()) / 86400000));
+  document.getElementById("statusPill").textContent = "مفعّل — يبقى " + days + " يوم";
+  renderHabits();
+  renderTasks();
+  renderAllCategories();
+  tickCountdown();
+  renderReminders();
+  renderNotes();
+  requestNotifyPermission();
+}
+
+/* ---------------- بيانات تجريبية للداشبورد (غيّرها كما تحب) ---------------- */
+const HABITS = [
+  "بدء العمل الساعة 6 صباحًا",
+  "أذكار الصباح",
+  "الرد السريع على الرسائل",
+  "التفاعل مع المتابعين",
+  "قراءة 10 صفحات"
+];
+const DAYS = ["س","ح","ن","ث","ر","خ","ج"];
+let habitState = {};
+
+function renderHabits(){
+  const body = document.getElementById("habitsBody");
+  body.innerHTML = "";
+  HABITS.forEach((habit, hi) => {
+    const tr = document.createElement("tr");
+    const th = document.createElement("th");
+    th.textContent = habit;
+    tr.appendChild(th);
+    DAYS.forEach((d, di) => {
+      const td = document.createElement("td");
+      const key = hi + "_" + di;
+      const box = document.createElement("span");
+      box.className = "chk" + (habitState[key] ? " on" : "");
+      box.onclick = () => {
+        habitState[key] = !habitState[key];
+        renderHabits();
+        updateHeroStats();
+      };
+      td.appendChild(box);
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+  updateHeroStats();
+}
+
+const TASKS = [
+  "مراجعة رسائل الزبائن",
+  "تحديث شيت الأكواد",
+  "متابعة اشتراك جديد",
+  "استراحة قصيرة"
+];
+let taskState = {};
+
+function renderTasks(){
+  const list = document.getElementById("tasksList");
+  list.innerHTML = "";
+  TASKS.forEach((task, i) => {
+    const row = document.createElement("div");
+    row.className = "taskRow" + (taskState[i] ? " done" : "");
+    const dot = document.createElement("span");
+    dot.className = "dot" + (taskState[i] ? " on" : "");
+    dot.onclick = () => {
+      taskState[i] = !taskState[i];
+      renderTasks();
+      updateHeroStats();
+    };
+    const label = document.createElement("span");
+    label.textContent = task;
+    row.appendChild(dot);
+    row.appendChild(label);
+    list.appendChild(row);
+  });
+  updateHeroStats();
+}
+
+/* ---------------- أقسام إضافية: العبادة / الرياضة / الدراسة ---------------- */
+const CATEGORIES = {
+  worshipList: ["صلاة الفجر", "صلاة الظهر", "صلاة العصر", "صلاة المغرب", "صلاة العشاء", "ورد قرآن يومي"],
+  sportList:   ["إحماء 5 دقائق", "30 دقيقة كارديو", "تمارين قوة", "تمدد بعد التمرين"],
+  studyList:   ["مراجعة الدرس", "حل تمارين", "قراءة 20 صفحة", "تلخيص الملاحظات"]
+};
+const categoryState = { worshipList:{}, sportList:{}, studyList:{} };
+
+function renderCategory(id){
+  const items = CATEGORIES[id];
+  const state = categoryState[id];
+  const list = document.getElementById(id);
+  list.innerHTML = "";
+  items.forEach((item, i) => {
+    const row = document.createElement("div");
+    row.className = "taskRow" + (state[i] ? " done" : "");
+    const dot = document.createElement("span");
+    dot.className = "dot" + (state[i] ? " on" : "");
+    dot.onclick = () => { state[i] = !state[i]; renderCategory(id); };
+    const label = document.createElement("span");
+    label.textContent = item;
+    row.appendChild(dot);
+    row.appendChild(label);
+    list.appendChild(row);
+  });
+}
+
+function renderAllCategories(){
+  Object.keys(CATEGORIES).forEach(renderCategory);
+}
+
+/* ---------------- عد تنازلي حي (يوم / ساعة / دقيقة / ثانية) ---------------- */
+// غيّر هذا التاريخ لتاريخ الهدف الفعلي (سنة-شهر-يوم)
+const GOAL_TARGET_DATE = new Date(Date.now() + 111*24*60*60*1000);
+
+function tickCountdown(){
+  const diff = Math.max(0, GOAL_TARGET_DATE - Date.now());
+  const d = Math.floor(diff/86400000);
+  const h = Math.floor((diff%86400000)/3600000);
+  const m = Math.floor((diff%3600000)/60000);
+  const s = Math.floor((diff%60000)/1000);
+  document.getElementById("cDays").textContent = d;
+  document.getElementById("cHours").textContent = String(h).padStart(2,"0");
+  document.getElementById("cMins").textContent = String(m).padStart(2,"0");
+  document.getElementById("cSecs").textContent = String(s).padStart(2,"0");
+}
+setInterval(tickCountdown, 1000);
+
+/* ---------------- المنبّه (تذكيرات + إشعارات) ---------------- */
+let reminders = JSON.parse(localStorage.getItem("kami_reminders") || "[]");
+
+function saveReminders(){
+  localStorage.setItem("kami_reminders", JSON.stringify(reminders));
+}
+
+function addReminder(){
+  const title = document.getElementById("reminderTitle").value.trim();
+  const time = document.getElementById("reminderTime").value;
+  if(!title || !time){ return; }
+  reminders.push({ id: Date.now(), title, time, notified: false });
+  saveReminders();
+  document.getElementById("reminderTitle").value = "";
+  document.getElementById("reminderTime").value = "";
+  renderReminders();
+}
+
+function deleteReminder(id){
+  reminders = reminders.filter(r => r.id !== id);
+  saveReminders();
+  renderReminders();
+}
+
+function renderReminders(){
+  const list = document.getElementById("remindersList");
+  list.innerHTML = "";
+  if(reminders.length === 0){
+    list.innerHTML = '<div class="emptyHint">ماكو تذكيرات حاليًا</div>';
+    return;
+  }
+  reminders
+    .slice()
+    .sort((a,b) => new Date(a.time) - new Date(b.time))
+    .forEach(r => {
+      const due = new Date(r.time).getTime() <= Date.now();
+      const row = document.createElement("div");
+      row.className = "cardRow" + (due ? " due" : "");
+      row.innerHTML = `
+        <div class="info">
+          <div class="title">${r.title}</div>
+          <div class="meta">${new Date(r.time).toLocaleString("ar-IQ")}${due ? " — حان الوقت" : ""}</div>
+        </div>
+        <button class="del" onclick="deleteReminder(${r.id})">✕</button>
+      `;
+      list.appendChild(row);
+    });
+}
+
+// يطلب إذن الإشعارات أول ما يفتح الداشبورد
+function requestNotifyPermission(){
+  if("Notification" in window && Notification.permission === "default"){
+    Notification.requestPermission();
+  }
+}
+
+// يفحص كل 20 ثانية هل فيه تذكير وصل وقته
+setInterval(() => {
+  let changed = false;
+  reminders.forEach(r => {
+    if(!r.notified && new Date(r.time).getTime() <= Date.now()){
+      r.notified = true;
+      changed = true;
+      if("Notification" in window && Notification.permission === "granted"){
+        new Notification("☆║ Cαмι", { body: r.title });
+      }
+    }
+  });
+  if(changed){ saveReminders(); renderReminders(); }
+}, 20000);
+
+/* ---------------- ملاحظات (طلبات لسا ما خلصت) ---------------- */
+let notes = JSON.parse(localStorage.getItem("kami_notes") || "[]");
+
+function saveNotes(){
+  localStorage.setItem("kami_notes", JSON.stringify(notes));
+}
+
+function addNote(){
+  const text = document.getElementById("noteText").value.trim();
+  if(!text) return;
+  notes.push({ id: Date.now(), text, done: false });
+  saveNotes();
+  document.getElementById("noteText").value = "";
+  renderNotes();
+}
+
+function toggleNote(id){
+  const n = notes.find(n => n.id === id);
+  if(n){ n.done = !n.done; saveNotes(); renderNotes(); }
+}
+
+function deleteNote(id){
+  notes = notes.filter(n => n.id !== id);
+  saveNotes();
+  renderNotes();
+}
+
+function renderNotes(){
+  const list = document.getElementById("notesList");
+  list.innerHTML = "";
+  if(notes.length === 0){
+    list.innerHTML = '<div class="emptyHint">ماكو ملاحظات حاليًا</div>';
+    return;
+  }
+  notes.forEach(n => {
+    const row = document.createElement("div");
+    row.className = "cardRow" + (n.done ? " noteDone" : "");
+    const check = document.createElement("span");
+    check.className = "noteCheck" + (n.done ? " on" : "");
+    check.onclick = () => toggleNote(n.id);
+    const info = document.createElement("div");
+    info.className = "info";
+    info.innerHTML = `<div class="title">${n.text}</div>`;
+    const del = document.createElement("button");
+    del.className = "del";
+    del.textContent = "✕";
+    del.onclick = () => deleteNote(n.id);
+    row.appendChild(check);
+    row.appendChild(info);
+    row.appendChild(del);
+    list.appendChild(row);
+  });
+}
+
+function updateHeroStats(){
+  const totalHabitCells = HABITS.length * DAYS.length;
+  const doneHabitCells = Object.values(habitState).filter(Boolean).length;
+  const pct = totalHabitCells ? Math.round((doneHabitCells/totalHabitCells)*100) : 0;
+  document.getElementById("habitPct").textContent = pct + "%";
+
+  const doneTasks = Object.values(taskState).filter(Boolean).length;
+  document.getElementById("taskCount").textContent = doneTasks + "/" + TASKS.length;
+}
+
+checkExistingLicense();
+</script>
+</body>
+</html>
