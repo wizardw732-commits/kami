@@ -8,20 +8,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #17121F;
-    --bg-elevated: #211A2E;
-    --bg-card: #251E33;
-    --line: #362C48;
-    --gold: #F5B84B;
-    --teal: #34D3B8;
-    --pink: #EF6F8E;
-    --text: #F3EEE9;
-    --text-muted: #9C93AA;
+    --bg: #120D1A;
+    --bg-elevated: #1D1629;
+    --bg-card: #241B33;
+    --line: #372A4A;
+    --gold: #F7BB4E;
+    --teal: #33D9C4;
+    --pink: #F0577E;
+    --purple: #8B6BF2;
+    --text: #F5F1EC;
+    --text-muted: #A599B8;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--bg);
+    background: radial-gradient(circle at 20% 0%, #241B38 0%, var(--bg) 45%);
     color:var(--text);
     font-family:'Tajawal',sans-serif;
     min-height:100vh;
@@ -54,6 +55,7 @@
     background:var(--bg-card);
     border:1px solid var(--line);
     border-radius:20px;
+    box-shadow:0 12px 32px -12px rgba(0,0,0,0.55);
     padding:28px 22px;
     width:100%;
     max-width:360px;
@@ -118,6 +120,7 @@
   }
   .topbar .name{font-size:22px;font-weight:800;}
   .topbar .name span{color:var(--gold);}
+  .todayDate{font-size:12px;color:var(--text-muted);margin-top:2px;}
   .pill{
     background:var(--bg-elevated);
     border:1px solid var(--line);
@@ -137,6 +140,7 @@
     background:var(--bg-card);
     border:1px solid var(--line);
     border-radius:16px;
+    box-shadow:0 8px 20px -10px rgba(0,0,0,0.5);
     padding:16px 18px;
     min-width:140px;
     flex:1;
@@ -205,6 +209,7 @@
     background:linear-gradient(135deg, var(--bg-card), var(--bg-elevated));
     border:1px solid var(--line);
     border-radius:16px;
+    box-shadow:0 8px 20px -10px rgba(0,0,0,0.5);
     padding:20px;
   }
   .goalCard .goalTitle{font-size:15px;color:var(--text-muted);margin-bottom:4px;}
@@ -215,14 +220,14 @@
   .countdown{display:flex;gap:8px;margin-top:10px;}
   .cBlock{
     flex:1;
-    background:var(--bg-elevated);
+    background:linear-gradient(180deg, #0D0913, #1A1224);
     border:1px solid var(--line);
-    border-radius:12px;
-    padding:10px 4px;
+    border-radius:14px;
+    padding:14px 4px 10px;
     text-align:center;
   }
-  .cBlock span{display:block;font-size:22px;font-weight:800;color:var(--pink);}
-  .cBlock small{font-size:11px;color:var(--text-muted);}
+  .cBlock span{display:block;font-size:26px;font-weight:800;color:var(--pink);letter-spacing:1px;}
+  .cBlock small{font-size:10.5px;color:var(--text-muted);letter-spacing:0.5px;}
 
   .addBox{
     display:flex;
@@ -281,6 +286,31 @@
   .noteCheck.on{background:var(--gold);border-color:var(--gold);}
   .emptyHint{color:var(--text-muted);font-size:13px;padding:6px 2px;}
 
+  .folderRow{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    margin-bottom:10px;
+    padding-bottom:2px;
+  }
+  .folderChip{
+    flex:0 0 auto;
+    background:var(--bg-elevated);
+    border:1px solid var(--line);
+    color:var(--text-muted);
+    font-size:12.5px;
+    padding:7px 14px;
+    border-radius:999px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .folderChip.active{
+    background:var(--purple);
+    border-color:var(--purple);
+    color:#fff;
+    font-weight:700;
+  }
+
   .weekRow{
     display:flex;
     gap:10px;
@@ -303,6 +333,75 @@
     font-weight:800;
     margin-top:8px;
   }
+  .trendCard{
+    margin-top:12px;
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px 10px 4px;
+  }
+
+  .gearBtn{
+    background:var(--bg-elevated);
+    border:1px solid var(--line);
+    color:var(--text);
+    width:34px;height:34px;
+    border-radius:10px;
+    font-size:15px;
+    cursor:pointer;
+  }
+  .settingsOverlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.55);
+    z-index:50;
+    align-items:flex-end;
+    justify-content:center;
+  }
+  .settingsOverlay.open{ display:flex; }
+  .settingsPanel{
+    width:100%;
+    max-width:420px;
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:20px 20px 0 0;
+    padding:20px;
+  }
+  .settingsHead{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:16px;
+    font-weight:700;
+    margin-bottom:18px;
+  }
+  .settingsRow{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 0;
+    border-top:1px solid var(--line);
+    font-size:14px;
+  }
+  .segBtns{ display:flex; gap:6px; }
+  .segBtn{
+    background:var(--bg-elevated);
+    border:1px solid var(--line);
+    color:var(--text-muted);
+    font-size:12.5px;
+    padding:7px 12px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .segBtn.active{ background:var(--gold); color:#241B0A; border-color:var(--gold); font-weight:700; }
+  .colorDots{ display:flex; gap:8px; }
+  .colorDot{
+    width:24px;height:24px;
+    border-radius:50%;
+    cursor:pointer;
+    border:2px solid var(--line);
+  }
 
   footer{
     text-align:center;
@@ -317,13 +416,13 @@
   <!-- ============ شاشة القفل / التفعيل ============ -->
   <div id="lockScreen">
     <div class="brandmark">☆║ C<span>α</span>мι</div>
-    <div class="tagline">عاداتك، مهامك، وأهدافك — من مكان وحد</div>
+    <div class="tagline" data-i18n="tagline">عاداتك، مهامك، وأهدافك — من مكان وحد</div>
 
     <div class="lockCard">
-      <h2>فعّل حسابك</h2>
+      <h2 data-i18n="activateTitle">فعّل حسابك</h2>
       <p>أدخل كود التفعيل حتى تفتح كامي وتبدأ تنظم يومك.</p>
       <input id="codeInput" type="text" placeholder="مثال: TRY-KAMI-7" />
-      <button class="btn btn-primary" onclick="activate()">تفعيل</button>
+      <button class="btn btn-primary" onclick="activate()" data-i18n="activateBtn">تفعيل</button>
       <div id="lockMessage"></div>
     </div>
 
@@ -333,33 +432,67 @@
   <!-- ============ لوحة التحكم ============ -->
   <div id="dashboard">
     <div class="topbar">
-      <div class="name">☆║ C<span>α</span>мι</div>
-      <div class="pill" id="statusPill">التجربة فعّالة</div>
+      <div>
+        <div class="name">☆║ C<span>α</span>мι</div>
+        <div class="todayDate" id="todayDate"></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="pill" id="statusPill">التجربة فعّالة</div>
+        <button class="gearBtn" onclick="openSettings()">⚙️</button>
+      </div>
+    </div>
+
+    <!-- ============ لوحة الإعدادات ============ -->
+    <div class="settingsOverlay" id="settingsOverlay" onclick="closeSettings(event)">
+      <div class="settingsPanel" onclick="event.stopPropagation()">
+        <div class="settingsHead">
+          <span data-i18n="settingsTitle">الإعدادات</span>
+          <button class="gearBtn" onclick="closeSettings()">✕</button>
+        </div>
+
+        <div class="settingsRow">
+          <span data-i18n="langLabel">اللغة</span>
+          <div class="segBtns">
+            <button class="segBtn" id="langAr" onclick="setLang('ar')">عربي</button>
+            <button class="segBtn" id="langEn" onclick="setLang('en')">English</button>
+          </div>
+        </div>
+
+        <div class="settingsRow">
+          <span data-i18n="colorLabel">لون المنصة</span>
+          <div class="colorDots">
+            <span class="colorDot" style="background:#F7BB4E" onclick="setAccent('#F7BB4E')"></span>
+            <span class="colorDot" style="background:#33D9C4" onclick="setAccent('#33D9C4')"></span>
+            <span class="colorDot" style="background:#8B6BF2" onclick="setAccent('#8B6BF2')"></span>
+            <span class="colorDot" style="background:#F0577E" onclick="setAccent('#F0577E')"></span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="heroRow">
       <div class="heroCard gold">
         <div class="num" id="habitPct">0%</div>
-        <div class="label">إنجاز عادات اليوم</div>
+        <div class="label" data-i18n="heroHabits">إنجاز عادات اليوم</div>
       </div>
       <div class="heroCard teal">
         <div class="num" id="taskCount">0/0</div>
-        <div class="label">مهام اليوم</div>
+        <div class="label" data-i18n="heroTasks">مهام اليوم</div>
       </div>
     </div>
 
     <section>
-      <div class="sectionTitle">العادات اليومية</div>
+      <div class="sectionTitle" data-i18n="secHabits">العادات اليومية</div>
       <div class="addBox">
         <input id="habitNameInput" type="text" placeholder="اكتب اسم عادة جديدة" />
-        <button class="btn btn-mini" onclick="addHabit()">إضافة عادة</button>
+        <button class="btn btn-mini" onclick="addHabit()" data-i18n="btnAddHabit">إضافة عادة</button>
       </div>
       <div class="habitsWrap">
         <table id="habitsTable">
           <thead>
             <tr>
               <th style="text-align:right;padding-right:14px;">العادة</th>
-              <th>س</th><th>ح</th><th>ن</th><th>ث</th><th>ر</th><th>خ</th><th>ج</th>
+              <th>س</th><th>ح</th><th>ن</th><th>ث</th><th>ر</th><th>خ</th><th>ج</th><th></th>
             </tr>
           </thead>
           <tbody id="habitsBody"></tbody>
@@ -368,59 +501,59 @@
     </section>
 
     <section>
-      <div class="sectionTitle">نظرة أسبوعية</div>
+      <div class="sectionTitle" data-i18n="secWeekly">نظرة أسبوعية</div>
       <div class="weekRow" id="weekRow"></div>
+      <div class="trendCard" id="trendChart"></div>
     </section>
 
     <section>
-      <div class="sectionTitle">مهام اليوم</div>
+      <div class="sectionTitle" data-i18n="secTasks">مهام اليوم</div>
+      <div class="addBox">
+        <input id="taskNameInput" type="text" placeholder="اكتب مهمة جديدة" />
+        <button class="btn btn-mini" onclick="addTask()">إضافة مهمة</button>
+      </div>
       <div id="tasksList"></div>
     </section>
 
     <section>
-      <div class="sectionTitle">هدفك الحالي</div>
+      <div class="sectionTitle" data-i18n="secGoal">هدفك الحالي</div>
+      <div class="addBox">
+        <input id="goalTitleInput" type="text" placeholder="اكتب اسم هدفك" />
+        <input id="goalDateInput" type="date" />
+        <button class="btn btn-mini" onclick="setGoal()">حفظ الهدف</button>
+      </div>
       <div class="goalCard">
-        <div class="goalTitle">تعلم مصطلحات إنكليزية جديدة</div>
+        <div class="goalTitle" id="goalTitleDisplay">ماكو هدف محدد بعد</div>
         <div class="countdown" id="countdown">
           <div class="cBlock"><span id="cDays">--</span><small>يوم</small></div>
           <div class="cBlock"><span id="cHours">--</span><small>ساعة</small></div>
           <div class="cBlock"><span id="cMins">--</span><small>دقيقة</small></div>
           <div class="cBlock"><span id="cSecs">--</span><small>ثانية</small></div>
         </div>
-        <div class="goalBarTrack"><div class="goalBarFill"></div></div>
+        <div class="goalBarTrack"><div class="goalBarFill" id="goalBarFill"></div></div>
       </div>
     </section>
 
     <section>
-      <div class="sectionTitle">العبادة</div>
-      <div id="worshipList"></div>
-    </section>
-
-    <section>
-      <div class="sectionTitle">الرياضة</div>
-      <div id="sportList"></div>
-    </section>
-
-    <section>
-      <div class="sectionTitle">الدراسة</div>
-      <div id="studyList"></div>
-    </section>
-
-    <section>
-      <div class="sectionTitle">المنبّه</div>
+      <div class="sectionTitle" data-i18n="secReminders">المنبّه</div>
       <div class="addBox">
         <input id="reminderTitle" type="text" placeholder="عنوان التذكير" />
         <input id="reminderTime" type="datetime-local" />
-        <button class="btn btn-mini" onclick="addReminder()">إضافة تذكير</button>
+        <button class="btn btn-mini" onclick="addReminder()" data-i18n="btnAddReminder">إضافة تذكير</button>
       </div>
       <div id="remindersList"></div>
     </section>
 
     <section>
-      <div class="sectionTitle">ملاحظات</div>
+      <div class="sectionTitle" data-i18n="secNotes">ملاحظات</div>
+      <div class="folderRow" id="folderRow"></div>
+      <div class="addBox">
+        <input id="folderNameInput" type="text" placeholder="اسم مجلد جديد" style="max-width:140px;" />
+        <button class="btn btn-mini" onclick="addFolder()" data-i18n="btnAddFolder">إضافة مجلد</button>
+      </div>
       <div class="addBox">
         <input id="noteText" type="text" placeholder="مثال: طلب الزبون فلان لسا ما خلص" />
-        <button class="btn btn-mini" onclick="addNote()">إضافة ملاحظة</button>
+        <button class="btn btn-mini" onclick="addNote()" data-i18n="btnAddNote">إضافة ملاحظة</button>
       </div>
       <div id="notesList"></div>
     </section>
@@ -522,29 +655,31 @@ function activate(){
   }
 }
 
+function renderTodayDate(){
+  const el = document.getElementById("todayDate");
+  if(!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleDateString("ar-IQ", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+}
+
 function showDashboard(expiryIso){
   document.getElementById("lockScreen").style.display = "none";
   document.getElementById("dashboard").style.display = "block";
   const days = Math.max(0, Math.ceil((new Date(expiryIso) - Date.now()) / 86400000));
   document.getElementById("statusPill").textContent = "مفعّل — يبقى " + days + " يوم";
+  renderTodayDate();
   renderHabits();
   renderWeekRow();
   renderTasks();
-  renderAllCategories();
   tickCountdown();
   renderReminders();
+  renderFolders();
   renderNotes();
   requestNotifyPermission();
 }
 
 /* ---------------- العادات (قابلة للإضافة، تُحفظ بمتصفح الجهاز) ---------------- */
-let HABITS = JSON.parse(localStorage.getItem("kami_habits") || "null") || [
-  "بدء العمل الساعة 6 صباحًا",
-  "أذكار الصباح",
-  "الرد السريع على الرسائل",
-  "التفاعل مع المتابعين",
-  "قراءة 10 صفحات"
-];
+let HABITS = JSON.parse(localStorage.getItem("kami_habits") || "null") || [];
 const DAYS = ["س","ح","ن","ث","ر","خ","ج"];
 let habitState = JSON.parse(localStorage.getItem("kami_habit_state") || "{}");
 
@@ -555,9 +690,20 @@ function addHabit(){
   const input = document.getElementById("habitNameInput");
   const name = input.value.trim();
   if(!name) return;
-  HABITS.push(name);
+  HABITS.push({ id: Date.now(), name });
   saveHabits();
   input.value = "";
+  renderHabits();
+  renderWeekRow();
+}
+
+function deleteHabit(id){
+  HABITS = HABITS.filter(h => h.id !== id);
+  saveHabits();
+  Object.keys(habitState).forEach(key => {
+    if(key.startsWith(id + "_")) delete habitState[key];
+  });
+  saveHabitState();
   renderHabits();
   renderWeekRow();
 }
@@ -565,14 +711,24 @@ function addHabit(){
 function renderHabits(){
   const body = document.getElementById("habitsBody");
   body.innerHTML = "";
-  HABITS.forEach((habit, hi) => {
+  if(HABITS.length === 0){
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 9;
+    td.innerHTML = '<div class="emptyHint">ماكو عادات بعد — أضف عادتك الأولى فوگ 👆</div>';
+    tr.appendChild(td);
+    body.appendChild(tr);
+    updateHeroStats();
+    return;
+  }
+  HABITS.forEach((habit) => {
     const tr = document.createElement("tr");
     const th = document.createElement("th");
-    th.textContent = habit;
+    th.textContent = habit.name;
     tr.appendChild(th);
     DAYS.forEach((d, di) => {
       const td = document.createElement("td");
-      const key = hi + "_" + di;
+      const key = habit.id + "_" + di;
       const box = document.createElement("span");
       box.className = "chk" + (habitState[key] ? " on" : "");
       box.onclick = () => {
@@ -585,6 +741,13 @@ function renderHabits(){
       td.appendChild(box);
       tr.appendChild(td);
     });
+    const tdDel = document.createElement("td");
+    const del = document.createElement("button");
+    del.className = "del";
+    del.textContent = "✕";
+    del.onclick = () => deleteHabit(habit.id);
+    tdDel.appendChild(del);
+    tr.appendChild(tdDel);
     body.appendChild(tr);
   });
   updateHeroStats();
@@ -607,12 +770,14 @@ function renderWeekRow(){
   if(!row) return;
   row.innerHTML = "";
   const total = HABITS.length;
+  const pctList = [];
   DAYS.forEach((d, di) => {
     let done = 0;
-    for(let hi = 0; hi < total; hi++){
-      if(habitState[hi + "_" + di]) done++;
-    }
+    HABITS.forEach(h => {
+      if(habitState[h.id + "_" + di]) done++;
+    });
     const pct = total ? Math.round((done / total) * 100) : 0;
+    pctList.push(pct);
     const color = pct >= 70 ? "var(--teal)" : (pct >= 30 ? "var(--gold)" : "var(--pink)");
     const card = document.createElement("div");
     card.className = "dayCard";
@@ -623,67 +788,91 @@ function renderWeekRow(){
     `;
     row.appendChild(card);
   });
+  renderTrendChart(pctList);
 }
 
-const TASKS = [
-  "مراجعة رسائل الزبائن",
-  "تحديث شيت الأكواد",
-  "متابعة اشتراك جديد",
-  "استراحة قصيرة"
-];
-let taskState = {};
+function renderTrendChart(pctList){
+  const el = document.getElementById("trendChart");
+  if(!el) return;
+  const w = 320, h = 70, pad = 6;
+  const stepX = (w - pad * 2) / (pctList.length - 1);
+  const points = pctList.map((p, i) => {
+    const x = pad + i * stepX;
+    const y = h - pad - (p / 100) * (h - pad * 2);
+    return [x, y];
+  });
+  const linePath = points.map((p, i) => (i === 0 ? "M" : "L") + p[0] + "," + p[1]).join(" ");
+  const areaPath = linePath + ` L${points[points.length-1][0]},${h} L${points[0][0]},${h} Z`;
+  el.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--teal)" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="var(--teal)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${areaPath}" fill="url(#trendFill)"/>
+      <path d="${linePath}" fill="none" stroke="var(--teal)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
+}
+
+let TASKS = JSON.parse(localStorage.getItem("kami_tasks") || "null") || [];
+let taskState = JSON.parse(localStorage.getItem("kami_task_state") || "{}");
+
+function saveTasks(){ localStorage.setItem("kami_tasks", JSON.stringify(TASKS)); }
+function saveTaskState(){ localStorage.setItem("kami_task_state", JSON.stringify(taskState)); }
+
+function addTask(){
+  const input = document.getElementById("taskNameInput");
+  const text = input.value.trim();
+  if(!text) return;
+  TASKS.push({ id: Date.now(), text });
+  saveTasks();
+  input.value = "";
+  renderTasks();
+}
+
+function deleteTask(id){
+  TASKS = TASKS.filter(t => t.id !== id);
+  saveTasks();
+  delete taskState[id];
+  saveTaskState();
+  renderTasks();
+}
 
 function renderTasks(){
   const list = document.getElementById("tasksList");
   list.innerHTML = "";
-  TASKS.forEach((task, i) => {
+  if(TASKS.length === 0){
+    list.innerHTML = '<div class="emptyHint">ماكو مهام اليوم بعد — أضف وحدة فوگ 👆</div>';
+    updateHeroStats();
+    return;
+  }
+  TASKS.forEach((task) => {
     const row = document.createElement("div");
-    row.className = "taskRow" + (taskState[i] ? " done" : "");
+    row.className = "taskRow" + (taskState[task.id] ? " done" : "");
     const dot = document.createElement("span");
-    dot.className = "dot" + (taskState[i] ? " on" : "");
+    dot.className = "dot" + (taskState[task.id] ? " on" : "");
     dot.onclick = () => {
-      taskState[i] = !taskState[i];
+      taskState[task.id] = !taskState[task.id];
+      saveTaskState();
       renderTasks();
       updateHeroStats();
     };
     const label = document.createElement("span");
-    label.textContent = task;
+    label.textContent = task.text;
+    label.style.flex = "1";
+    const del = document.createElement("button");
+    del.className = "del";
+    del.textContent = "✕";
+    del.onclick = () => deleteTask(task.id);
     row.appendChild(dot);
     row.appendChild(label);
+    row.appendChild(del);
     list.appendChild(row);
   });
   updateHeroStats();
-}
-
-/* ---------------- أقسام إضافية: العبادة / الرياضة / الدراسة ---------------- */
-const CATEGORIES = {
-  worshipList: ["صلاة الفجر", "صلاة الظهر", "صلاة العصر", "صلاة المغرب", "صلاة العشاء", "ورد قرآن يومي"],
-  sportList:   ["إحماء 5 دقائق", "30 دقيقة كارديو", "تمارين قوة", "تمدد بعد التمرين"],
-  studyList:   ["مراجعة الدرس", "حل تمارين", "قراءة 20 صفحة", "تلخيص الملاحظات"]
-};
-const categoryState = { worshipList:{}, sportList:{}, studyList:{} };
-
-function renderCategory(id){
-  const items = CATEGORIES[id];
-  const state = categoryState[id];
-  const list = document.getElementById(id);
-  list.innerHTML = "";
-  items.forEach((item, i) => {
-    const row = document.createElement("div");
-    row.className = "taskRow" + (state[i] ? " done" : "");
-    const dot = document.createElement("span");
-    dot.className = "dot" + (state[i] ? " on" : "");
-    dot.onclick = () => { state[i] = !state[i]; renderCategory(id); };
-    const label = document.createElement("span");
-    label.textContent = item;
-    row.appendChild(dot);
-    row.appendChild(label);
-    list.appendChild(row);
-  });
-}
-
-function renderAllCategories(){
-  Object.keys(CATEGORIES).forEach(renderCategory);
 }
 
 /* ---------------- عد تنازلي حي (يوم / ساعة / دقيقة / ثانية) ---------------- */
@@ -774,17 +963,44 @@ setInterval(() => {
   if(changed){ saveReminders(); renderReminders(); }
 }, 20000);
 
-/* ---------------- ملاحظات (طلبات لسا ما خلصت) ---------------- */
+/* ---------------- ملاحظات بمجلدات (طلبات لسا ما خلصت) ---------------- */
 let notes = JSON.parse(localStorage.getItem("kami_notes") || "[]");
+notes.forEach(n => { if(!n.folder) n.folder = "عام"; });
+let folders = JSON.parse(localStorage.getItem("kami_folders") || "null") || ["عام", "حياتي", "أفكار"];
+let activeFolder = folders[0];
 
-function saveNotes(){
-  localStorage.setItem("kami_notes", JSON.stringify(notes));
+function saveNotes(){ localStorage.setItem("kami_notes", JSON.stringify(notes)); }
+function saveFolders(){ localStorage.setItem("kami_folders", JSON.stringify(folders)); }
+
+function addFolder(){
+  const input = document.getElementById("folderNameInput");
+  const name = input.value.trim();
+  if(!name || folders.includes(name)) return;
+  folders.push(name);
+  saveFolders();
+  input.value = "";
+  activeFolder = name;
+  renderFolders();
+  renderNotes();
+}
+
+function renderFolders(){
+  const row = document.getElementById("folderRow");
+  if(!row) return;
+  row.innerHTML = "";
+  folders.forEach(f => {
+    const chip = document.createElement("div");
+    chip.className = "folderChip" + (f === activeFolder ? " active" : "");
+    chip.textContent = f;
+    chip.onclick = () => { activeFolder = f; renderFolders(); renderNotes(); };
+    row.appendChild(chip);
+  });
 }
 
 function addNote(){
   const text = document.getElementById("noteText").value.trim();
   if(!text) return;
-  notes.push({ id: Date.now(), text, done: false });
+  notes.push({ id: Date.now(), text, done: false, folder: activeFolder });
   saveNotes();
   document.getElementById("noteText").value = "";
   renderNotes();
@@ -804,11 +1020,12 @@ function deleteNote(id){
 function renderNotes(){
   const list = document.getElementById("notesList");
   list.innerHTML = "";
-  if(notes.length === 0){
-    list.innerHTML = '<div class="emptyHint">ماكو ملاحظات حاليًا</div>';
+  const visible = notes.filter(n => n.folder === activeFolder);
+  if(visible.length === 0){
+    list.innerHTML = '<div class="emptyHint">ماكو ملاحظات بهذا المجلد</div>';
     return;
   }
-  notes.forEach(n => {
+  visible.forEach(n => {
     const row = document.createElement("div");
     row.className = "cardRow" + (n.done ? " noteDone" : "");
     const check = document.createElement("span");
@@ -839,6 +1056,86 @@ function updateHeroStats(){
 }
 
 checkExistingLicense();
+
+/* ---------------- الإعدادات: اللغة والألوان ---------------- */
+const I18N = {
+  ar: {
+    tagline: "عاداتك، مهامك، وأهدافك — من مكان وحد",
+    activateTitle: "فعّل حسابك",
+    activateBtn: "تفعيل",
+    heroHabits: "إنجاز عادات اليوم",
+    heroTasks: "مهام اليوم",
+    secHabits: "العادات اليومية",
+    btnAddHabit: "إضافة عادة",
+    secWeekly: "نظرة أسبوعية",
+    secTasks: "مهام اليوم",
+    secGoal: "هدفك الحالي",
+    secReminders: "المنبّه",
+    btnAddReminder: "إضافة تذكير",
+    secNotes: "ملاحظات",
+    btnAddFolder: "إضافة مجلد",
+    btnAddNote: "إضافة ملاحظة",
+    settingsTitle: "الإعدادات",
+    langLabel: "اللغة",
+    colorLabel: "لون المنصة"
+  },
+  en: {
+    tagline: "Your habits, tasks, and goals — in one place",
+    activateTitle: "Activate your account",
+    activateBtn: "Activate",
+    heroHabits: "Today's habits",
+    heroTasks: "Today's tasks",
+    secHabits: "Daily habits",
+    btnAddHabit: "Add habit",
+    secWeekly: "Weekly overview",
+    secTasks: "Today's tasks",
+    secGoal: "Your current goal",
+    secReminders: "Reminders",
+    btnAddReminder: "Add reminder",
+    secNotes: "Notes",
+    btnAddFolder: "Add folder",
+    btnAddNote: "Add note",
+    settingsTitle: "Settings",
+    langLabel: "Language",
+    colorLabel: "Accent color"
+  }
+};
+
+function applyLang(lang){
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    if(I18N[lang] && I18N[lang][key]) el.textContent = I18N[lang][key];
+  });
+  document.getElementById("langAr").classList.toggle("active", lang === "ar");
+  document.getElementById("langEn").classList.toggle("active", lang === "en");
+}
+
+function setLang(lang){
+  localStorage.setItem("kami_lang", lang);
+  document.documentElement.setAttribute("dir", lang === "en" ? "ltr" : "rtl");
+  applyLang(lang);
+}
+
+function setAccent(hex){
+  localStorage.setItem("kami_accent", hex);
+  document.documentElement.style.setProperty("--gold", hex);
+}
+
+function openSettings(){
+  document.getElementById("settingsOverlay").classList.add("open");
+}
+function closeSettings(e){
+  document.getElementById("settingsOverlay").classList.remove("open");
+}
+
+// تطبيق التفضيلات المحفوظة عند فتح الموقع
+(function initPreferences(){
+  const savedLang = localStorage.getItem("kami_lang") || "ar";
+  const savedAccent = localStorage.getItem("kami_accent");
+  document.documentElement.setAttribute("dir", savedLang === "en" ? "ltr" : "rtl");
+  if(savedAccent) document.documentElement.style.setProperty("--gold", savedAccent);
+  applyLang(savedLang);
+})();
 </script>
 </body>
 </html>
