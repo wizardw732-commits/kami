@@ -149,6 +149,7 @@
   .heroCard .label{font-size:13px;color:var(--text-muted);margin-top:6px;}
   .heroCard.gold .num{color:var(--gold);}
   .heroCard.teal .num{color:var(--teal);}
+  .heroCard.pink .num{color:var(--pink);}
 
   section{padding:8px 20px 24px;}
   .sectionTitle{
@@ -403,6 +404,68 @@
     border:2px solid var(--line);
   }
 
+  .page{ display:none; }
+  .page.active{ display:block; }
+
+  .navOverlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.55);
+    z-index:55;
+  }
+  .navOverlay.open{ display:block; }
+  .navPanel{
+    position:absolute;
+    top:0; right:0;
+    height:100%;
+    width:78%;
+    max-width:280px;
+    background:var(--bg-card);
+    border-left:1px solid var(--line);
+    padding:20px 14px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .navHead{
+    font-weight:800;
+    font-size:17px;
+    margin-bottom:14px;
+    padding:0 6px;
+  }
+  .navItem{
+    background:none;
+    border:none;
+    color:var(--text);
+    text-align:right;
+    font-size:14.5px;
+    padding:12px 10px;
+    border-radius:10px;
+    cursor:pointer;
+  }
+  .navItem:hover, .navItem.active{
+    background:var(--bg-elevated);
+    color:var(--gold);
+  }
+
+  .monthlyWrap{ overflow-x:auto; }
+  .monthlyWrap table{ border-collapse:collapse; }
+  .monthlyWrap th, .monthlyWrap td{ padding:6px 8px; text-align:center; white-space:nowrap; }
+  .monthlyWrap .habitNameCell{ text-align:right; padding-right:12px; min-width:120px; position:sticky; right:0; background:var(--bg-card); }
+  .wkHead{ font-size:12px; font-weight:800; padding:6px 4px; border-radius:8px 8px 0 0; color:#1a1220; }
+  .wk0{ background:var(--pink); }
+  .wk1{ background:var(--gold); }
+  .wk2{ background:var(--teal); }
+  .wk3{ background:var(--purple); color:#fff; }
+  .dayNumCell{ font-size:11px; color:var(--text-muted); }
+  .moodCell{
+    font-size:20px;
+    cursor:pointer;
+    padding:6px 8px;
+    min-width:34px;
+  }
+
   footer{
     text-align:center;
     color:var(--text-muted);
@@ -437,8 +500,24 @@
         <div class="todayDate" id="todayDate"></div>
       </div>
       <div style="display:flex; align-items:center; gap:8px;">
+        <button class="gearBtn" onclick="openNav()">☰</button>
         <div class="pill" id="statusPill">التجربة فعّالة</div>
         <button class="gearBtn" onclick="openSettings()">⚙️</button>
+      </div>
+    </div>
+
+    <!-- ============ القائمة الجانبية ============ -->
+    <div class="navOverlay" id="navOverlay" onclick="closeNav(event)">
+      <div class="navPanel" onclick="event.stopPropagation()">
+        <div class="navHead">☆║ C<span>α</span>мι</div>
+        <button class="navItem" data-nav="habits" onclick="showPage('habits')">📋 <span data-i18n="secHabits">العادات اليومية</span></button>
+        <button class="navItem" data-nav="weekly" onclick="showPage('weekly')">📊 <span data-i18n="secWeekly">نظرة أسبوعية</span></button>
+        <button class="navItem" data-nav="monthly" onclick="showPage('monthly')">📅 <span data-i18n="secMonthly">المخطط الشهري</span></button>
+        <button class="navItem" data-nav="salary" onclick="showPage('salary')">💰 <span data-i18n="secSalary">الراتب الشهري</span></button>
+        <button class="navItem" data-nav="tasks" onclick="showPage('tasks')">✅ <span data-i18n="secTasks">مهام اليوم</span></button>
+        <button class="navItem" data-nav="goal" onclick="showPage('goal')">🎯 <span data-i18n="secGoal">هدفك الحالي</span></button>
+        <button class="navItem" data-nav="reminders" onclick="showPage('reminders')">⏰ <span data-i18n="secReminders">المنبّه</span></button>
+        <button class="navItem" data-nav="notes" onclick="showPage('notes')">📝 <span data-i18n="secNotes">ملاحظات</span></button>
       </div>
     </div>
 
@@ -481,7 +560,7 @@
       </div>
     </div>
 
-    <section>
+    <section class="page" data-page="habits">
       <div class="sectionTitle" data-i18n="secHabits">العادات اليومية</div>
       <div class="addBox">
         <input id="habitNameInput" type="text" placeholder="اكتب اسم عادة جديدة" />
@@ -500,13 +579,75 @@
       </div>
     </section>
 
-    <section>
+    <section class="page" data-page="weekly">
       <div class="sectionTitle" data-i18n="secWeekly">نظرة أسبوعية</div>
       <div class="weekRow" id="weekRow"></div>
       <div class="trendCard" id="trendChart"></div>
     </section>
 
-    <section>
+    <section class="page" data-page="monthly">
+      <div class="sectionTitle" data-i18n="secMonthly">المخطط الشهري</div>
+
+      <div class="trendCard" id="monthlyBarChart"></div>
+
+      <div class="addBox">
+        <input id="monthlyHabitInput" type="text" placeholder="اكتب عادة شهرية جديدة" />
+        <button class="btn btn-mini" onclick="addMonthlyHabit()">إضافة</button>
+      </div>
+
+      <div class="habitsWrap monthlyWrap">
+        <table id="monthlyTable">
+          <thead>
+            <tr id="monthlyWeekHeadRow"></tr>
+            <tr id="monthlyDayHeadRow"></tr>
+          </thead>
+          <tbody id="monthlyBody"></tbody>
+        </table>
+      </div>
+
+      <div class="sectionTitle" style="font-size:14px;margin-top:16px;">الحالة المزاجية اليومية</div>
+      <div class="habitsWrap monthlyWrap">
+        <table>
+          <tbody><tr id="monthlyMoodRow"></tr></tbody>
+        </table>
+      </div>
+      <div class="trendCard" id="monthlyMoodChart"></div>
+    </section>
+
+    <section class="page" data-page="salary">
+      <div class="sectionTitle" data-i18n="secSalary">الراتب الشهري</div>
+
+      <div class="addBox">
+        <input id="salaryAmountInput" type="number" placeholder="اكتب راتبك الشهري" />
+        <button class="btn btn-mini" onclick="setSalary()">حفظ الراتب</button>
+      </div>
+
+      <div class="heroRow">
+        <div class="heroCard gold">
+          <div class="num" id="salaryTotalDisplay">0</div>
+          <div class="label">الراتب</div>
+        </div>
+        <div class="heroCard pink">
+          <div class="num" id="salarySpentDisplay">0</div>
+          <div class="label">المصروف</div>
+        </div>
+        <div class="heroCard teal">
+          <div class="num" id="salaryLeftDisplay">0</div>
+          <div class="label">المتبقي</div>
+        </div>
+      </div>
+      <div class="goalBarTrack"><div class="goalBarFill" id="salaryBarFill"></div></div>
+
+      <div class="addBox" style="margin-top:16px;">
+        <input id="expenseNameInput" type="text" placeholder="وين راح المصروف؟ (مثال: إيجار)" />
+        <input id="expenseAmountInput" type="number" placeholder="المبلغ" />
+        <button class="btn btn-mini" onclick="addExpense()">إضافة</button>
+      </div>
+      <div id="expensesList"></div>
+      <div class="trendCard" id="expenseChart"></div>
+    </section>
+
+    <section class="page" data-page="tasks">
       <div class="sectionTitle" data-i18n="secTasks">مهام اليوم</div>
       <div class="addBox">
         <input id="taskNameInput" type="text" placeholder="اكتب مهمة جديدة" />
@@ -515,7 +656,7 @@
       <div id="tasksList"></div>
     </section>
 
-    <section>
+    <section class="page" data-page="goal">
       <div class="sectionTitle" data-i18n="secGoal">هدفك الحالي</div>
       <div class="addBox">
         <input id="goalTitleInput" type="text" placeholder="اكتب اسم هدفك" />
@@ -534,7 +675,7 @@
       </div>
     </section>
 
-    <section>
+    <section class="page" data-page="reminders">
       <div class="sectionTitle" data-i18n="secReminders">المنبّه</div>
       <div class="addBox">
         <input id="reminderTitle" type="text" placeholder="عنوان التذكير" />
@@ -544,7 +685,7 @@
       <div id="remindersList"></div>
     </section>
 
-    <section>
+    <section class="page" data-page="notes">
       <div class="sectionTitle" data-i18n="secNotes">ملاحظات</div>
       <div class="folderRow" id="folderRow"></div>
       <div class="addBox">
@@ -670,11 +811,15 @@ function showDashboard(expiryIso){
   renderTodayDate();
   renderHabits();
   renderWeekRow();
+  renderMonthly();
+  renderSalary();
   renderTasks();
+  renderGoal();
   tickCountdown();
   renderReminders();
   renderFolders();
   renderNotes();
+  showPage(localStorage.getItem("kami_lastPage") || "habits");
   requestNotifyPermission();
 }
 
@@ -751,6 +896,287 @@ function renderHabits(){
     body.appendChild(tr);
   });
   updateHeroStats();
+}
+
+/* ---------------- الراتب الشهري (دخل + مصاريف، وين يروح الراتب) ---------------- */
+let SALARY = Number(localStorage.getItem("kami_salary") || 0);
+let EXPENSES = JSON.parse(localStorage.getItem("kami_expenses") || "[]");
+
+function saveSalary(){ localStorage.setItem("kami_salary", String(SALARY)); }
+function saveExpenses(){ localStorage.setItem("kami_expenses", JSON.stringify(EXPENSES)); }
+
+function setSalary(){
+  const input = document.getElementById("salaryAmountInput");
+  const val = Number(input.value);
+  if(!val || val <= 0) return;
+  SALARY = val;
+  saveSalary();
+  input.value = "";
+  renderSalary();
+}
+
+function addExpense(){
+  const nameInput = document.getElementById("expenseNameInput");
+  const amountInput = document.getElementById("expenseAmountInput");
+  const name = nameInput.value.trim();
+  const amount = Number(amountInput.value);
+  if(!name || !amount || amount <= 0) return;
+  EXPENSES.push({ id: Date.now(), name, amount });
+  saveExpenses();
+  nameInput.value = "";
+  amountInput.value = "";
+  renderSalary();
+}
+
+function deleteExpense(id){
+  EXPENSES = EXPENSES.filter(e => e.id !== id);
+  saveExpenses();
+  renderSalary();
+}
+
+function renderSalary(){
+  document.getElementById("salaryAmountInput") && (document.getElementById("salaryAmountInput").placeholder = SALARY ? "الراتب الحالي: " + SALARY : "اكتب راتبك الشهري");
+  const spent = EXPENSES.reduce((s, e) => s + e.amount, 0);
+  const left = SALARY - spent;
+  document.getElementById("salaryTotalDisplay").textContent = SALARY.toLocaleString();
+  document.getElementById("salarySpentDisplay").textContent = spent.toLocaleString();
+  document.getElementById("salaryLeftDisplay").textContent = left.toLocaleString();
+  const pct = SALARY > 0 ? Math.min(100, Math.round((spent / SALARY) * 100)) : 0;
+  const fill = document.getElementById("salaryBarFill");
+  if(fill){
+    fill.style.width = pct + "%";
+    fill.style.background = pct >= 90 ? "var(--pink)" : (pct >= 60 ? "var(--gold)" : "var(--teal)");
+  }
+
+  const list = document.getElementById("expensesList");
+  list.innerHTML = "";
+  if(EXPENSES.length === 0){
+    list.innerHTML = '<div class="emptyHint">ماكو مصاريف مسجلة بعد — أضف وحدة فوگ 👆</div>';
+  } else {
+    EXPENSES.forEach(exp => {
+      const row = document.createElement("div");
+      row.className = "taskRow";
+      const label = document.createElement("span");
+      label.textContent = exp.name;
+      label.style.flex = "1";
+      const amt = document.createElement("span");
+      amt.textContent = exp.amount.toLocaleString();
+      amt.style.color = "var(--pink)";
+      amt.style.fontWeight = "700";
+      amt.style.marginLeft = "8px";
+      const del = document.createElement("button");
+      del.className = "del";
+      del.textContent = "✕";
+      del.onclick = () => deleteExpense(exp.id);
+      row.appendChild(label);
+      row.appendChild(amt);
+      row.appendChild(del);
+      list.appendChild(row);
+    });
+  }
+
+  renderExpenseChart(spent, left);
+}
+
+function renderExpenseChart(spent, left){
+  const el = document.getElementById("expenseChart");
+  if(!el) return;
+  if(EXPENSES.length === 0){
+    el.innerHTML = "";
+    return;
+  }
+  const colors = ["var(--pink)","var(--gold)","var(--teal)","var(--purple)"];
+  const total = EXPENSES.reduce((s, e) => s + e.amount, 0) || 1;
+  const w = 620, h = 26;
+  let x = 0, bars = "";
+  EXPENSES.forEach((exp, i) => {
+    const segW = (exp.amount / total) * w;
+    bars += `<rect x="${x}" y="0" width="${Math.max(0, segW - 2)}" height="${h}" rx="4" fill="${colors[i % colors.length]}" opacity="0.9"/>`;
+    x += segW;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none">${bars}</svg>
+    <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">توزيع المصروف حسب كل بند — كل لون = مصروف</div>`;
+}
+
+/* ---------------- المخطط الشهري (30 يوم، 4 أسابيع بألوان، مزاج يومي) ---------------- */
+const MONTH_DAYS = 30;
+const WEEK_COLORS = ["wk0","wk1","wk2","wk3"];
+const MOOD_EMOJIS = ["—","😄","🙂","😐","😢","😡"];
+
+let MONTHLY_HABITS = JSON.parse(localStorage.getItem("kami_monthly_habits") || "null") || [];
+let monthlyState = JSON.parse(localStorage.getItem("kami_monthly_state") || "{}");
+let monthlyMood = JSON.parse(localStorage.getItem("kami_monthly_mood") || "{}");
+
+function saveMonthlyHabits(){ localStorage.setItem("kami_monthly_habits", JSON.stringify(MONTHLY_HABITS)); }
+function saveMonthlyState(){ localStorage.setItem("kami_monthly_state", JSON.stringify(monthlyState)); }
+function saveMonthlyMood(){ localStorage.setItem("kami_monthly_mood", JSON.stringify(monthlyMood)); }
+
+function weekOfDay(di){ return Math.min(3, Math.floor(di / 8)); } // 8,8,8,6 تقريبًا لتغطية 30 يوم بأربع مجموعات
+
+function addMonthlyHabit(){
+  const input = document.getElementById("monthlyHabitInput");
+  const name = input.value.trim();
+  if(!name) return;
+  MONTHLY_HABITS.push({ id: Date.now(), name });
+  saveMonthlyHabits();
+  input.value = "";
+  renderMonthly();
+}
+
+function deleteMonthlyHabit(id){
+  MONTHLY_HABITS = MONTHLY_HABITS.filter(h => h.id !== id);
+  saveMonthlyHabits();
+  Object.keys(monthlyState).forEach(key => {
+    if(key.startsWith(id + "_")) delete monthlyState[key];
+  });
+  saveMonthlyState();
+  renderMonthly();
+}
+
+function renderMonthlyHeaders(){
+  const weekRow = document.getElementById("monthlyWeekHeadRow");
+  const dayRow = document.getElementById("monthlyDayHeadRow");
+  weekRow.innerHTML = '<th class="habitNameCell"></th>';
+  dayRow.innerHTML = '<th class="habitNameCell">العادة</th>';
+  let i = 0;
+  while(i < MONTH_DAYS){
+    const wk = weekOfDay(i);
+    let span = 0;
+    const startI = i;
+    while(i < MONTH_DAYS && weekOfDay(i) === wk){ span++; i++; }
+    const th = document.createElement("th");
+    th.className = "wkHead " + WEEK_COLORS[wk];
+    th.colSpan = span;
+    th.textContent = "الأسبوع " + (wk + 1);
+    weekRow.appendChild(th);
+    for(let d = startI; d < startI + span; d++){
+      const dth = document.createElement("th");
+      dth.className = "dayNumCell";
+      dth.textContent = d + 1;
+      dayRow.appendChild(dth);
+    }
+  }
+}
+
+function renderMonthly(){
+  renderMonthlyHeaders();
+  const body = document.getElementById("monthlyBody");
+  body.innerHTML = "";
+  const pctList = [];
+  for(let d = 0; d < MONTH_DAYS; d++){
+    let done = 0;
+    MONTHLY_HABITS.forEach(h => { if(monthlyState[h.id + "_" + d]) done++; });
+    pctList.push(MONTHLY_HABITS.length ? Math.round((done / MONTHLY_HABITS.length) * 100) : 0);
+  }
+
+  if(MONTHLY_HABITS.length === 0){
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = MONTH_DAYS + 1;
+    td.innerHTML = '<div class="emptyHint">ماكو عادات شهرية بعد — أضف وحدة فوگ 👆</div>';
+    tr.appendChild(td);
+    body.appendChild(tr);
+  } else {
+    MONTHLY_HABITS.forEach(habit => {
+      const tr = document.createElement("tr");
+      const th = document.createElement("th");
+      th.className = "habitNameCell";
+      th.textContent = habit.name;
+      const del = document.createElement("button");
+      del.className = "del";
+      del.textContent = "✕";
+      del.style.marginRight = "6px";
+      del.onclick = () => deleteMonthlyHabit(habit.id);
+      th.appendChild(del);
+      tr.appendChild(th);
+      for(let d = 0; d < MONTH_DAYS; d++){
+        const td = document.createElement("td");
+        const key = habit.id + "_" + d;
+        const box = document.createElement("span");
+        box.className = "chk" + (monthlyState[key] ? " on" : "");
+        box.onclick = () => {
+          monthlyState[key] = !monthlyState[key];
+          saveMonthlyState();
+          renderMonthly();
+        };
+        td.appendChild(box);
+        tr.appendChild(td);
+      }
+      body.appendChild(tr);
+    });
+  }
+
+  renderMonthlyMoodRow();
+  renderMonthlyBarChart(pctList);
+  renderMonthlyMoodChart();
+}
+
+function renderMonthlyMoodRow(){
+  const row = document.getElementById("monthlyMoodRow");
+  row.innerHTML = '<th class="habitNameCell">المزاج</th>';
+  for(let d = 0; d < MONTH_DAYS; d++){
+    const td = document.createElement("td");
+    td.className = "moodCell";
+    const cur = monthlyMood[d] || 0;
+    td.textContent = MOOD_EMOJIS[cur];
+    td.onclick = () => {
+      monthlyMood[d] = ((monthlyMood[d] || 0) + 1) % MOOD_EMOJIS.length;
+      saveMonthlyMood();
+      renderMonthlyMoodRow();
+      renderMonthlyMoodChart();
+    };
+    row.appendChild(td);
+  }
+}
+
+function renderMonthlyBarChart(pctList){
+  const el = document.getElementById("monthlyBarChart");
+  if(!el) return;
+  const w = 620, h = 90, pad = 4;
+  const barW = (w - pad * 2) / pctList.length;
+  let bars = "";
+  pctList.forEach((p, i) => {
+    const wk = weekOfDay(i);
+    const barColor = ["var(--pink)","var(--gold)","var(--teal)","var(--purple)"][wk];
+    const barH = (p / 100) * (h - pad * 2);
+    const x = pad + i * barW;
+    const y = h - pad - barH;
+    bars += `<rect x="${x + 1}" y="${y}" width="${barW - 2}" height="${barH}" rx="2" fill="${barColor}" opacity="0.85"/>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none">${bars}</svg>`;
+}
+
+function renderMonthlyMoodChart(){
+  const el = document.getElementById("monthlyMoodChart");
+  if(!el) return;
+  const w = 620, h = 70, pad = 6;
+  const vals = [];
+  for(let d = 0; d < MONTH_DAYS; d++){
+    const m = monthlyMood[d] || 0;
+    // كل إيموجي بحسب ترتيبه: فرحان=أعلى، غضبان=أدنى، فاضي=منتصف
+    const scoreMap = [50, 100, 75, 50, 25, 0];
+    vals.push(scoreMap[m]);
+  }
+  const stepX = (w - pad * 2) / (vals.length - 1);
+  const points = vals.map((v, i) => {
+    const x = pad + i * stepX;
+    const y = h - pad - (v / 100) * (h - pad * 2);
+    return [x, y];
+  });
+  const linePath = points.map((p, i) => (i === 0 ? "M" : "L") + p[0] + "," + p[1]).join(" ");
+  const areaPath = linePath + ` L${points[points.length-1][0]},${h} L${points[0][0]},${h} Z`;
+  el.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="moodFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--pink)" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="var(--pink)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${areaPath}" fill="url(#moodFill)"/>
+      <path d="${linePath}" fill="none" stroke="var(--pink)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
 }
 
 /* ---------------- نظرة أسبوعية (نسبة إنجاز كل يوم بدائرة) ---------------- */
@@ -876,11 +1302,38 @@ function renderTasks(){
 }
 
 /* ---------------- عد تنازلي حي (يوم / ساعة / دقيقة / ثانية) ---------------- */
-// غيّر هذا التاريخ لتاريخ الهدف الفعلي (سنة-شهر-يوم)
 const GOAL_TARGET_DATE = new Date(Date.now() + 111*24*60*60*1000);
+let GOAL = JSON.parse(localStorage.getItem("kami_goal") || "null");
+
+function setGoal(){
+  const titleEl = document.getElementById("goalTitleInput");
+  const dateEl = document.getElementById("goalDateInput");
+  const title = titleEl.value.trim();
+  const date = dateEl.value;
+  if(!title || !date) return;
+  GOAL = { title, date, start: Date.now() };
+  localStorage.setItem("kami_goal", JSON.stringify(GOAL));
+  titleEl.value = "";
+  dateEl.value = "";
+  renderGoal();
+  tickCountdown();
+}
+
+function renderGoal(){
+  const disp = document.getElementById("goalTitleDisplay");
+  disp.textContent = GOAL ? GOAL.title : "ماكو هدف محدد بعد";
+}
 
 function tickCountdown(){
-  const diff = Math.max(0, GOAL_TARGET_DATE - Date.now());
+  let target, start;
+  if(GOAL){
+    target = new Date(GOAL.date + "T23:59:59").getTime();
+    start = GOAL.start || (target - 111*86400000);
+  } else {
+    target = GOAL_TARGET_DATE.getTime();
+    start = target - 111*86400000;
+  }
+  const diff = Math.max(0, target - Date.now());
   const d = Math.floor(diff/86400000);
   const h = Math.floor((diff%86400000)/3600000);
   const m = Math.floor((diff%3600000)/60000);
@@ -889,6 +1342,11 @@ function tickCountdown(){
   document.getElementById("cHours").textContent = String(h).padStart(2,"0");
   document.getElementById("cMins").textContent = String(m).padStart(2,"0");
   document.getElementById("cSecs").textContent = String(s).padStart(2,"0");
+  const span = Math.max(1, target - start);
+  const elapsed = Math.min(span, Math.max(0, Date.now() - start));
+  const pct = Math.round((elapsed / span) * 100);
+  const fill = document.getElementById("goalBarFill");
+  if(fill) fill.style.width = pct + "%";
 }
 setInterval(tickCountdown, 1000);
 
@@ -1068,6 +1526,8 @@ const I18N = {
     secHabits: "العادات اليومية",
     btnAddHabit: "إضافة عادة",
     secWeekly: "نظرة أسبوعية",
+    secMonthly: "المخطط الشهري",
+    secSalary: "الراتب الشهري",
     secTasks: "مهام اليوم",
     secGoal: "هدفك الحالي",
     secReminders: "المنبّه",
@@ -1088,6 +1548,8 @@ const I18N = {
     secHabits: "Daily habits",
     btnAddHabit: "Add habit",
     secWeekly: "Weekly overview",
+    secMonthly: "Monthly plan",
+    secSalary: "Monthly salary",
     secTasks: "Today's tasks",
     secGoal: "Your current goal",
     secReminders: "Reminders",
@@ -1126,6 +1588,24 @@ function openSettings(){
 }
 function closeSettings(e){
   document.getElementById("settingsOverlay").classList.remove("open");
+}
+
+function openNav(){
+  document.getElementById("navOverlay").classList.add("open");
+}
+function closeNav(e){
+  document.getElementById("navOverlay").classList.remove("open");
+}
+function showPage(id){
+  document.querySelectorAll(".page").forEach(el => el.classList.remove("active"));
+  const target = document.querySelector('.page[data-page="' + id + '"]');
+  if(target) target.classList.add("active");
+  document.querySelectorAll(".navItem").forEach(el => el.classList.remove("active"));
+  const navBtn = document.querySelector('.navItem[data-nav="' + id + '"]');
+  if(navBtn) navBtn.classList.add("active");
+  closeNav();
+  localStorage.setItem("kami_lastPage", id);
+  window.scrollTo({top:0, behavior:"instant"});
 }
 
 // تطبيق التفضيلات المحفوظة عند فتح الموقع
