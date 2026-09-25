@@ -304,6 +304,9 @@
     border-radius:999px;
     cursor:pointer;
     white-space:nowrap;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
   }
   .folderChip.active{
     background:var(--purple);
@@ -311,6 +314,12 @@
     color:#fff;
     font-weight:700;
   }
+  .folderDel{
+    font-size:11px;
+    opacity:0.7;
+    padding:1px 3px;
+  }
+  .folderDel:hover{ opacity:1; }
 
   .weekRow{
     display:flex;
@@ -1449,10 +1458,31 @@ function renderFolders(){
   folders.forEach(f => {
     const chip = document.createElement("div");
     chip.className = "folderChip" + (f === activeFolder ? " active" : "");
-    chip.textContent = f;
+    const label = document.createElement("span");
+    label.textContent = f;
+    chip.appendChild(label);
     chip.onclick = () => { activeFolder = f; renderFolders(); renderNotes(); };
+    if(folders.length > 1){
+      const del = document.createElement("span");
+      del.className = "folderDel";
+      del.textContent = "✕";
+      del.onclick = (e) => { e.stopPropagation(); deleteFolder(f); };
+      chip.appendChild(del);
+    }
     row.appendChild(chip);
   });
+}
+
+function deleteFolder(name){
+  if(folders.length <= 1) return;
+  folders = folders.filter(f => f !== name);
+  saveFolders();
+  const fallback = folders[0];
+  notes.forEach(n => { if(n.folder === name) n.folder = fallback; });
+  saveNotes();
+  if(activeFolder === name) activeFolder = fallback;
+  renderFolders();
+  renderNotes();
 }
 
 function addNote(){
