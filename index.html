@@ -248,6 +248,76 @@
     padding:11px 12px;
   }
   .addBox input:focus{outline:2px solid var(--gold);}
+  .dateRow{
+    display:flex;
+    gap:8px;
+    flex:1;
+    min-width:220px;
+  }
+  .dateRow select{
+    flex:1;
+    background:var(--bg-elevated);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--text);
+    font-family:'Tajawal',sans-serif;
+    font-size:13.5px;
+    padding:11px 6px;
+    text-align:center;
+  }
+  .dateRow select:focus{outline:2px solid var(--gold);}
+
+  .aiTagline{
+    font-size:12.5px;
+    color:var(--purple);
+    font-weight:700;
+    margin-bottom:4px;
+  }
+  .aiStepCard{
+    background:var(--bg-card);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px;
+    margin-bottom:14px;
+  }
+  .aiStepTitle{
+    font-size:14px;
+    font-weight:700;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .aiStepCard input[type="file"]{
+    width:100%;
+    background:var(--bg-elevated);
+    border:1px solid var(--line);
+    border-radius:10px;
+    color:var(--text-muted);
+    font-size:12.5px;
+    padding:10px;
+  }
+  .aiResultBox{
+    white-space:pre-wrap;
+    font-size:13.5px;
+    line-height:1.9;
+    color:var(--text);
+    background:var(--bg-elevated);
+    border-radius:10px;
+    padding:12px;
+    max-height:360px;
+    overflow-y:auto;
+  }
+  .aiLockedMsg{ color:var(--pink); font-weight:700; font-size:13px; margin-top:8px; }
+  .aiResetLink{
+    display:inline-block;
+    margin-top:10px;
+    font-size:12.5px;
+    color:var(--teal);
+    cursor:pointer;
+    text-decoration:underline;
+  }
   .btn-mini{
     background:var(--teal);
     color:#0B2320;
@@ -523,6 +593,7 @@
         <button class="navItem" data-nav="weekly" onclick="showPage('weekly')">📊 <span data-i18n="secWeekly">نظرة أسبوعية</span></button>
         <button class="navItem" data-nav="monthly" onclick="showPage('monthly')">📅 <span data-i18n="secMonthly">المخطط الشهري</span></button>
         <button class="navItem" data-nav="salary" onclick="showPage('salary')">💰 <span data-i18n="secSalary">الراتب الشهري</span></button>
+        <button class="navItem" data-nav="ai" onclick="showPage('ai')">🧠 <span data-i18n="secAI">الذكاء الصناعي</span></button>
         <button class="navItem" data-nav="tasks" onclick="showPage('tasks')">✅ <span data-i18n="secTasks">مهام اليوم</span></button>
         <button class="navItem" data-nav="goal" onclick="showPage('goal')">🎯 <span data-i18n="secGoal">هدفك الحالي</span></button>
         <button class="navItem" data-nav="reminders" onclick="showPage('reminders')">⏰ <span data-i18n="secReminders">المنبّه</span></button>
@@ -656,6 +727,45 @@
       <div class="trendCard" id="expenseChart"></div>
     </section>
 
+    <section class="page" data-page="ai">
+      <div class="aiTagline">✨ صنع اختباراتك مع Cami</div>
+      <div class="sectionTitle" data-i18n="secAI">الذكاء الصناعي</div>
+
+      <div class="aiStepCard">
+        <div class="aiStepTitle">1. ارفع ملف المادة الدراسية</div>
+        <input id="aiFileInput" type="file" accept="image/*,application/pdf" multiple />
+        <div id="aiFileNames" class="emptyHint" style="margin-top:8px;"></div>
+
+        <div class="addBox" style="margin-top:12px;">
+          <select id="aiQuestionType" class="btn-mini" style="flex:1;background:var(--bg-elevated);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;">
+            <option value="أسئلة متنوعة">أسئلة متنوعة</option>
+            <option value="تعاريف">تعاريف</option>
+            <option value="تعاليل">تعاليل</option>
+            <option value="اختيار من متعدد">اختيار من متعدد</option>
+          </select>
+          <input id="aiNumQuestions" type="number" placeholder="عدد الأسئلة" value="5" style="max-width:110px;" />
+          <input id="aiBranches" type="number" placeholder="عدد الفروع" value="1" style="max-width:110px;" />
+        </div>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="generateExam()">توليد الأسئلة</button>
+      </div>
+
+      <div id="aiExamCard" class="aiStepCard" style="display:none;">
+        <div class="aiStepTitle">2. ورقة الأسئلة <span id="aiTimer" class="pill" style="margin-right:8px;"></span></div>
+        <div id="aiQuestionsText" class="aiResultBox"></div>
+      </div>
+
+      <div id="aiAnswerCard" class="aiStepCard" style="display:none;">
+        <div class="aiStepTitle">3. صور ورقة إجابتك وارفعها</div>
+        <input id="aiAnswerInput" type="file" accept="image/*" />
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="gradeExam()">صحح إجاباتي</button>
+      </div>
+
+      <div id="aiResultCard" class="aiStepCard" style="display:none;">
+        <div class="aiStepTitle">النتيجة</div>
+        <div id="aiResultText" class="aiResultBox"></div>
+      </div>
+    </section>
+
     <section class="page" data-page="tasks">
       <div class="sectionTitle" data-i18n="secTasks">مهام اليوم</div>
       <div class="addBox">
@@ -669,7 +779,11 @@
       <div class="sectionTitle" data-i18n="secGoal">هدفك الحالي</div>
       <div class="addBox">
         <input id="goalTitleInput" type="text" placeholder="اكتب اسم هدفك" />
-        <input id="goalDateInput" type="date" />
+        <div class="dateRow">
+          <select id="goalDay"></select>
+          <select id="goalMonth"></select>
+          <select id="goalYear"></select>
+        </div>
         <button class="btn btn-mini" onclick="setGoal()">حفظ الهدف</button>
       </div>
       <div class="goalCard">
@@ -823,8 +937,10 @@ function showDashboard(expiryIso){
   renderMonthly();
   renderSalary();
   renderTasks();
+  initGoalDateSelects();
   renderGoal();
   tickCountdown();
+  initAIPage();
   renderReminders();
   renderFolders();
   renderNotes();
@@ -905,6 +1021,192 @@ function renderHabits(){
     body.appendChild(tr);
   });
   updateHeroStats();
+}
+
+/* ---------------- اختبارات Cami (ذكاء صناعي: توليد أسئلة + تصحيح صور) ---------------- */
+// 🔴 هذا الرابط لازم تعبيه بعد نشر kami-exam-worker.js على Cloudflare Workers
+const EXAM_WORKER_URL = "https://cami.wizardw732.workers.dev/";
+
+const EXAM_DURATION_MS = 2 * 60 * 60 * 1000; // ساعتين
+let examState = JSON.parse(localStorage.getItem("kami_exam_state") || "null");
+let examTimerInterval = null;
+
+function fileToBase64(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result; // data:<mime>;base64,<data>
+      const data = result.split(",")[1];
+      resolve({ mimeType: file.type || "application/octet-stream", data });
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function initAIPage(){
+  const fileInput = document.getElementById("aiFileInput");
+  if(fileInput && !fileInput.dataset.bound){
+    fileInput.dataset.bound = "1";
+    fileInput.addEventListener("change", () => {
+      const names = Array.from(fileInput.files).map(f => f.name);
+      document.getElementById("aiFileNames").textContent = names.length ? names.join("، ") : "";
+    });
+  }
+  restoreExamState();
+}
+
+async function generateExam(){
+  const fileInput = document.getElementById("aiFileInput");
+  if(!fileInput.files.length){
+    document.getElementById("aiFileNames").textContent = "لازم ترفع ملف واحد أقله ⬆️";
+    return;
+  }
+  if(EXAM_WORKER_URL.includes("PASTE_YOUR")){
+    alert("لازم أولاً تحط رابط الـ Worker بالكود (EXAM_WORKER_URL) حتى تشتغل هذي الميزة.");
+    return;
+  }
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = "...جاري التوليد";
+
+  try{
+    const files = await Promise.all(Array.from(fileInput.files).map(fileToBase64));
+    const payload = {
+      action: "generate",
+      questionType: document.getElementById("aiQuestionType").value,
+      numQuestions: document.getElementById("aiNumQuestions").value,
+      branches: document.getElementById("aiBranches").value,
+      files,
+    };
+    const res = await fetch(EXAM_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if(!data.text){ throw new Error("ما وصل جواب"); }
+
+    examState = {
+      questions: data.text,
+      startTime: Date.now(),
+      deadline: Date.now() + EXAM_DURATION_MS,
+      submitted: false,
+    };
+    localStorage.setItem("kami_exam_state", JSON.stringify(examState));
+    renderExamFromState();
+  } catch(e){
+    alert("صار خطأ: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "توليد الأسئلة";
+  }
+}
+
+function renderExamFromState(){
+  if(!examState) return;
+  document.getElementById("aiExamCard").style.display = "block";
+  document.getElementById("aiQuestionsText").textContent = examState.questions;
+
+  if(examState.submitted){
+    document.getElementById("aiAnswerCard").style.display = "none";
+  } else if(Date.now() >= examState.deadline){
+    lockExam();
+  } else {
+    document.getElementById("aiAnswerCard").style.display = "block";
+    startExamTimer();
+  }
+}
+
+function startExamTimer(){
+  clearInterval(examTimerInterval);
+  const tick = () => {
+    if(!examState || examState.submitted) { clearInterval(examTimerInterval); return; }
+    const remain = examState.deadline - Date.now();
+    if(remain <= 0){
+      clearInterval(examTimerInterval);
+      lockExam();
+      return;
+    }
+    const h = Math.floor(remain / 3600000);
+    const m = Math.floor((remain % 3600000) / 60000);
+    const s = Math.floor((remain % 60000) / 1000);
+    const pill = document.getElementById("aiTimer");
+    if(pill) pill.textContent = `⏳ ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+  };
+  tick();
+  examTimerInterval = setInterval(tick, 1000);
+}
+
+function lockExam(){
+  const answerCard = document.getElementById("aiAnswerCard");
+  answerCard.style.display = "block";
+  answerCard.innerHTML = '<div class="aiStepTitle">⛔ انتهى الوقت</div><div class="aiLockedMsg">خلص وقت الاختبار (ساعتين) ولم ترسل إجابتك. ابدأ اختبار جديد.</div><span class="aiResetLink" onclick="resetExam()">ابدأ اختبار جديد ↺</span>';
+  const pill = document.getElementById("aiTimer");
+  if(pill) pill.textContent = "⛔ انتهى الوقت";
+}
+
+async function gradeExam(){
+  if(!examState) return;
+  const answerInput = document.getElementById("aiAnswerInput");
+  if(!answerInput.files.length){
+    alert("لازم ترفع صورة ورقة إجابتك أولاً.");
+    return;
+  }
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = "...جاري التصحيح";
+
+  try{
+    const answerFiles = await Promise.all(Array.from(answerInput.files).map(fileToBase64));
+    const payload = {
+      action: "grade",
+      questions: examState.questions,
+      answerFiles,
+    };
+    const res = await fetch(EXAM_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if(!data.text){ throw new Error("ما وصل جواب"); }
+
+    document.getElementById("aiResultCard").style.display = "block";
+    document.getElementById("aiResultText").textContent = data.text;
+    document.getElementById("aiAnswerCard").style.display = "none";
+    clearInterval(examTimerInterval);
+
+    examState.submitted = true;
+    localStorage.setItem("kami_exam_state", JSON.stringify(examState));
+  } catch(e){
+    alert("صار خطأ: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "صحح إجاباتي";
+  }
+}
+
+function resetExam(){
+  examState = null;
+  localStorage.removeItem("kami_exam_state");
+  clearInterval(examTimerInterval);
+  document.getElementById("aiExamCard").style.display = "none";
+  document.getElementById("aiAnswerCard").style.display = "none";
+  document.getElementById("aiAnswerCard").innerHTML = `
+    <div class="aiStepTitle">3. صور ورقة إجابتك وارفعها</div>
+    <input id="aiAnswerInput" type="file" accept="image/*" />
+    <button class="btn btn-primary" style="margin-top:12px;" onclick="gradeExam()">صحح إجاباتي</button>
+  `;
+  document.getElementById("aiResultCard").style.display = "none";
+  document.getElementById("aiFileNames").textContent = "";
+  document.getElementById("aiFileInput").value = "";
+}
+
+function restoreExamState(){
+  if(examState){
+    renderExamFromState();
+  }
 }
 
 /* ---------------- الراتب الشهري (دخل + مصاريف، وين يروح الراتب) ---------------- */
@@ -1314,16 +1616,46 @@ function renderTasks(){
 const GOAL_TARGET_DATE = new Date(Date.now() + 111*24*60*60*1000);
 let GOAL = JSON.parse(localStorage.getItem("kami_goal") || "null");
 
+const AR_MONTHS = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+function initGoalDateSelects(){
+  const dayEl = document.getElementById("goalDay");
+  const monthEl = document.getElementById("goalMonth");
+  const yearEl = document.getElementById("goalYear");
+  if(!dayEl || dayEl.options.length) return; // init once
+  for(let d = 1; d <= 31; d++){
+    const o = document.createElement("option");
+    o.value = d; o.textContent = d;
+    dayEl.appendChild(o);
+  }
+  AR_MONTHS.forEach((m, i) => {
+    const o = document.createElement("option");
+    o.value = i + 1; o.textContent = m;
+    monthEl.appendChild(o);
+  });
+  const curYear = new Date().getFullYear();
+  for(let y = curYear; y <= curYear + 5; y++){
+    const o = document.createElement("option");
+    o.value = y; o.textContent = y;
+    yearEl.appendChild(o);
+  }
+  const now = new Date();
+  dayEl.value = now.getDate();
+  monthEl.value = now.getMonth() + 1;
+  yearEl.value = curYear;
+}
+
 function setGoal(){
   const titleEl = document.getElementById("goalTitleInput");
-  const dateEl = document.getElementById("goalDateInput");
   const title = titleEl.value.trim();
-  const date = dateEl.value;
-  if(!title || !date) return;
+  const d = document.getElementById("goalDay").value;
+  const m = document.getElementById("goalMonth").value;
+  const y = document.getElementById("goalYear").value;
+  if(!title || !d || !m || !y) return;
+  const date = y + "-" + String(m).padStart(2,"0") + "-" + String(d).padStart(2,"0");
   GOAL = { title, date, start: Date.now() };
   localStorage.setItem("kami_goal", JSON.stringify(GOAL));
   titleEl.value = "";
-  dateEl.value = "";
   renderGoal();
   tickCountdown();
 }
@@ -1558,6 +1890,7 @@ const I18N = {
     secWeekly: "نظرة أسبوعية",
     secMonthly: "المخطط الشهري",
     secSalary: "الراتب الشهري",
+    secAI: "الذكاء الصناعي",
     secTasks: "مهام اليوم",
     secGoal: "هدفك الحالي",
     secReminders: "المنبّه",
@@ -1580,6 +1913,7 @@ const I18N = {
     secWeekly: "Weekly overview",
     secMonthly: "Monthly plan",
     secSalary: "Monthly salary",
+    secAI: "AI exams",
     secTasks: "Today's tasks",
     secGoal: "Your current goal",
     secReminders: "Reminders",
