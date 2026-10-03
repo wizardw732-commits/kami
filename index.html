@@ -318,6 +318,29 @@
     cursor:pointer;
     text-decoration:underline;
   }
+  .chatBubble{
+    max-width:80%;
+    padding:9px 13px;
+    border-radius:14px;
+    margin-bottom:8px;
+    font-size:13.5px;
+    line-height:1.7;
+    white-space:pre-wrap;
+  }
+  .chatUser{
+    background:var(--gold);
+    color:#241B0A;
+    margin-right:0;
+    margin-left:auto;
+    border-bottom-left-radius:4px;
+  }
+  .chatAI{
+    background:var(--bg-elevated);
+    border:1px solid var(--line);
+    margin-left:0;
+    margin-right:auto;
+    border-bottom-right-radius:4px;
+  }
   .btn-mini{
     background:var(--teal);
     color:#0B2320;
@@ -755,14 +778,25 @@
       </div>
 
       <div id="aiAnswerCard" class="aiStepCard" style="display:none;">
-        <div class="aiStepTitle">3. صور ورقة إجابتك وارفعها</div>
-        <input id="aiAnswerInput" type="file" accept="image/*" />
+        <div class="aiStepTitle">3. صور ورقة إجابتك، أو ارفع ملف فيه الأسئلة والأجوبة مكتوبة</div>
+        <input id="aiAnswerInput" type="file" accept="image/*,.pdf,.txt,.doc,.docx" />
         <button class="btn btn-primary" style="margin-top:12px;" onclick="gradeExam()">صحح إجاباتي</button>
       </div>
 
       <div id="aiResultCard" class="aiStepCard" style="display:none;">
         <div class="aiStepTitle">النتيجة</div>
         <div id="aiResultText" class="aiResultBox"></div>
+      </div>
+
+      <div class="aiStepCard">
+        <div class="aiStepTitle">💬 تحدث مع الذكاء الصناعي مباشرة</div>
+        <div id="aiChatLog" class="aiResultBox" style="min-height:60px;"></div>
+        <div class="addBox" style="margin-top:10px;">
+          <input id="aiChatInput" type="text" placeholder="اكتب سؤالك..." />
+          <button class="btn btn-mini" id="aiMicBtn" onclick="toggleVoiceRecording()">🎤</button>
+          <button class="btn btn-mini" onclick="sendAIChat()">إرسال</button>
+        </div>
+        <input id="aiChatFileInput" type="file" accept="image/*,.pdf,.txt,.doc,.docx" style="margin-top:8px;" />
       </div>
     </section>
 
@@ -1194,8 +1228,8 @@ function resetExam(){
   document.getElementById("aiExamCard").style.display = "none";
   document.getElementById("aiAnswerCard").style.display = "none";
   document.getElementById("aiAnswerCard").innerHTML = `
-    <div class="aiStepTitle">3. صور ورقة إجابتك وارفعها</div>
-    <input id="aiAnswerInput" type="file" accept="image/*" />
+    <div class="aiStepTitle">3. صور ورقة إجابتك، أو ارفع ملف فيه الأسئلة والأجوبة مكتوبة</div>
+    <input id="aiAnswerInput" type="file" accept="image/*,.pdf,.txt,.doc,.docx" />
     <button class="btn btn-primary" style="margin-top:12px;" onclick="gradeExam()">صحح إجاباتي</button>
   `;
   document.getElementById("aiResultCard").style.display = "none";
@@ -1207,6 +1241,125 @@ function restoreExamState(){
   if(examState){
     renderExamFromState();
   }
+  renderAIChatLog();
+}
+
+/* ---------------- محادثة حرة مع الذكاء الصناعي (نص + ملف + صوت) ---------------- */
+let aiChatHistory = JSON.parse(localStorage.getItem("kami_ai_chat") || "[]");
+let aiMediaRecorder = null;
+let aiAudioChunks = [];
+let aiIsRecording = false;
+
+function renderAIChatLog(){
+  const log = document.getElementById("aiChatLog");
+  if(!log) return;
+  if(aiChatHistory.length === 0){
+    log.innerHTML = '<div class="emptyHint">اسألني أي شي... 🙂</div>';
+    return;
+  }
+  log.innerHTML = aiChatHistory.map(h =>
+    `<div class="chatBubble ${h.role === "user" ? "chatUser" : "chatAI"}">${(h.text || "").replace(/</g,"&lt;")}</div>`
+  ).join("");
+  log.scrollTop = log.scrollHeight;
+}
+
+function saveAIChat(){
+  localStorage.setItem("kami_ai_chat", JSON.stringify(aiChatHistory.slice(-40)));
+}
+
+async function sendAIChat(){
+  const input = document.getElementById("aiChatInput");
+  const fileInput = document.getElementById("aiChatFileInput");
+  const message = input.value.trim();
+  if(EXAM_WORKER_URL.includes("PASTE_YOUR")){ alert("لازم تحط رابط الـ Worker أول."); return; }
+
+  let files = [];
+  if(fileInput.files.length){
+    files = await Promise.all(Array.from(fileInput.files).map(fileToBase64));
+  }
+  if(!message && files.length === 0) return;
+
+  const historySoFar = aiChatHistory.slice();
+  aiChatHistory.push({ role: "user", text: message || "📎 ملف مرفق" });
+  renderAIChatLog();
+  input.value = "";
+  fileInput.value = "";
+
+  try{
+    const res = await fetch(EXAM_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "chat", message, history: historySoFar, files }),
+    });
+    const data = await res.json();
+    aiChatHistory.push({ role: "model", text: data.text || "..." });
+  } catch(e){
+    aiChatHistory.push({ role: "model", text: "صار خطأ بالاتصال." });
+  }
+  saveAIChat();
+  renderAIChatLog();
+}
+
+function blobToBase64(blob){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(",")[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function toggleVoiceRecording(){
+  const btn = document.getElementById("aiMicBtn");
+  if(!aiIsRecording){
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      aiAudioChunks = [];
+      aiMediaRecorder = new MediaRecorder(stream);
+      aiMediaRecorder.ondataavailable = (e) => aiAudioChunks.push(e.data);
+      aiMediaRecorder.onstop = async () => {
+        const blob = new Blob(aiAudioChunks, { type: "audio/webm" });
+        const base64 = await blobToBase64(blob);
+        sendAIVoiceMessage(base64);
+        stream.getTracks().forEach((t) => t.stop());
+      };
+      aiMediaRecorder.start();
+      aiIsRecording = true;
+      btn.textContent = "⏹️";
+    } catch(e){
+      alert("ما قدرت أوصل للمايكروفون — تأكد من صلاحية الوصول.");
+    }
+  } else {
+    aiMediaRecorder.stop();
+    aiIsRecording = false;
+    btn.textContent = "🎤";
+  }
+}
+
+async function sendAIVoiceMessage(base64){
+  if(EXAM_WORKER_URL.includes("PASTE_YOUR")){ alert("لازم تحط رابط الـ Worker أول."); return; }
+  const historySoFar = aiChatHistory.slice();
+  aiChatHistory.push({ role: "user", text: "🎤 رسالة صوتية" });
+  renderAIChatLog();
+
+  try{
+    const res = await fetch(EXAM_WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "chat",
+        message: "",
+        history: historySoFar,
+        files: [{ mimeType: "audio/webm", data: base64 }],
+      }),
+    });
+    const data = await res.json();
+    aiChatHistory.push({ role: "model", text: data.text || "..." });
+  } catch(e){
+    aiChatHistory.push({ role: "model", text: "صار خطأ بالاتصال." });
+  }
+  saveAIChat();
+  renderAIChatLog();
 }
 
 /* ---------------- الراتب الشهري (دخل + مصاريف، وين يروح الراتب) ---------------- */
