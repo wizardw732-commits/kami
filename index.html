@@ -617,6 +617,7 @@
         <button class="navItem" data-nav="monthly" onclick="showPage('monthly')">📅 <span data-i18n="secMonthly">المخطط الشهري</span></button>
         <button class="navItem" data-nav="salary" onclick="showPage('salary')">💰 <span data-i18n="secSalary">الراتب الشهري</span></button>
         <button class="navItem" data-nav="ai" onclick="showPage('ai')">🧠 <span data-i18n="secAI">الذكاء الصناعي</span></button>
+        <button class="navItem" data-nav="chat" onclick="showPage('chat')">💬 <span data-i18n="secChat">التحدث مع كامي</span></button>
         <button class="navItem" data-nav="tasks" onclick="showPage('tasks')">✅ <span data-i18n="secTasks">مهام اليوم</span></button>
         <button class="navItem" data-nav="goal" onclick="showPage('goal')">🎯 <span data-i18n="secGoal">هدفك الحالي</span></button>
         <button class="navItem" data-nav="reminders" onclick="showPage('reminders')">⏰ <span data-i18n="secReminders">المنبّه</span></button>
@@ -652,7 +653,7 @@
       </div>
     </div>
 
-    <div class="heroRow">
+    <div class="heroRow" id="globalHeroRow">
       <div class="heroCard gold">
         <div class="num" id="habitPct">0%</div>
         <div class="label" data-i18n="heroHabits">إنجاز عادات اليوم</div>
@@ -787,8 +788,11 @@
         <div id="aiResultText" class="aiResultBox"></div>
       </div>
 
+    </section>
+
+    <section class="page" data-page="chat">
+      <div class="sectionTitle" data-i18n="secChat">التحدث مع كامي</div>
       <div class="aiStepCard">
-        <div class="aiStepTitle">💬 تحدث مع الذكاء الصناعي مباشرة</div>
         <div id="aiChatLog" class="aiResultBox" style="min-height:60px;"></div>
         <div class="addBox" style="margin-top:10px;">
           <input id="aiChatInput" type="text" placeholder="اكتب سؤالك..." />
@@ -1064,17 +1068,63 @@ const EXAM_DURATION_MS = 2 * 60 * 60 * 1000; // ساعتين
 let examState = JSON.parse(localStorage.getItem("kami_exam_state") || "null");
 let examTimerInterval = null;
 
-function fileToBase64(file){
+function friendlyFetchError(e){
+  if(e && e.message && e.message.includes("Failed to fetch")){
+    return "ما كدر الموقع يوصل لسيرفر الذكاء الصناعي. تأكد: 1) الـ Worker منشور وفعال بـ Cloudflare، 2) رابطه مزبوط بالكود (EXAM_WORKER_URL)، 3) النت شغال، 4) جرب ملف أصغر حجمًا.";
+  }
+  return e ? e.message : "خطأ غير معروف";
+}
+
+const MAX_FILE_MB = 8;
+
+function readAsDataURL(blob){
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result; // data:<mime>;base64,<data>
-      const data = result.split(",")[1];
-      resolve({ mimeType: file.type || "application/octet-stream", data });
-    };
+    reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(blob);
   });
+}
+
+// يصغّر صور الكامرة الثقيلة (3-8 ميجا عادة) قبل الإرسال، حتى ما يفشل الرفع بالنت
+function compressImage(file, maxDim = 1600, quality = 0.75){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if(width > maxDim || height > maxDim){
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function fileToBase64(file){
+  const isImage = (file.type || "").startsWith("image/");
+
+  if(isImage){
+    try{
+      const dataUrl = await compressImage(file);
+      return { mimeType: "image/jpeg", data: dataUrl.split(",")[1] };
+    } catch(e){
+      // إذا فشل التصغير لأي سبب، نكمل بالطريقة العادية
+    }
+  }
+
+  if(file.size > MAX_FILE_MB * 1024 * 1024){
+    throw new Error(`الملف "${file.name}" حجمه كبير (أكثر من ${MAX_FILE_MB} ميجا) — جرب ملف أصغر.`);
+  }
+
+  const dataUrl = await readAsDataURL(file);
+  return { mimeType: file.type || "application/octet-stream", data: dataUrl.split(",")[1] };
 }
 
 function initAIPage(){
@@ -1129,7 +1179,7 @@ async function generateExam(){
     localStorage.setItem("kami_exam_state", JSON.stringify(examState));
     renderExamFromState();
   } catch(e){
-    alert("صار خطأ: " + e.message);
+    alert("صار خطأ: " + friendlyFetchError(e));
   } finally {
     btn.disabled = false;
     btn.textContent = "توليد الأسئلة";
@@ -1213,7 +1263,7 @@ async function gradeExam(){
     examState.submitted = true;
     localStorage.setItem("kami_exam_state", JSON.stringify(examState));
   } catch(e){
-    alert("صار خطأ: " + e.message);
+    alert("صار خطأ: " + friendlyFetchError(e));
   } finally {
     btn.disabled = false;
     btn.textContent = "صحح إجاباتي";
@@ -1293,7 +1343,7 @@ async function sendAIChat(){
     const data = await res.json();
     aiChatHistory.push({ role: "model", text: data.text || "..." });
   } catch(e){
-    aiChatHistory.push({ role: "model", text: "صار خطأ بالاتصال." });
+    aiChatHistory.push({ role: "model", text: friendlyFetchError(e) });
   }
   saveAIChat();
   renderAIChatLog();
@@ -1355,7 +1405,7 @@ async function sendAIVoiceMessage(base64){
     const data = await res.json();
     aiChatHistory.push({ role: "model", text: data.text || "..." });
   } catch(e){
-    aiChatHistory.push({ role: "model", text: "صار خطأ بالاتصال." });
+    aiChatHistory.push({ role: "model", text: friendlyFetchError(e) });
   }
   saveAIChat();
   renderAIChatLog();
@@ -2043,6 +2093,7 @@ const I18N = {
     secMonthly: "المخطط الشهري",
     secSalary: "الراتب الشهري",
     secAI: "اصنع اختبارك مع كامي",
+    secChat: "التحدث مع كامي",
     secTasks: "مهام اليوم",
     secGoal: "هدفك الحالي",
     secReminders: "المنبّه",
@@ -2066,6 +2117,7 @@ const I18N = {
     secMonthly: "Monthly plan",
     secSalary: "Monthly salary",
     secAI: "Create your exam with Cami",
+    secChat: "Chat with Cami",
     secTasks: "Today's tasks",
     secGoal: "Your current goal",
     secReminders: "Reminders",
@@ -2112,6 +2164,8 @@ function openNav(){
 function closeNav(e){
   document.getElementById("navOverlay").classList.remove("open");
 }
+const NO_HERO_PAGES = ["ai", "chat"];
+
 function showPage(id){
   document.querySelectorAll(".page").forEach(el => el.classList.remove("active"));
   const target = document.querySelector('.page[data-page="' + id + '"]');
@@ -2119,6 +2173,8 @@ function showPage(id){
   document.querySelectorAll(".navItem").forEach(el => el.classList.remove("active"));
   const navBtn = document.querySelector('.navItem[data-nav="' + id + '"]');
   if(navBtn) navBtn.classList.add("active");
+  const hero = document.getElementById("globalHeroRow");
+  if(hero) hero.style.display = NO_HERO_PAGES.includes(id) ? "none" : "flex";
   closeNav();
   localStorage.setItem("kami_lastPage", id);
   window.scrollTo({top:0, behavior:"instant"});
